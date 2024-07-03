@@ -1,5 +1,5 @@
-﻿using Tengella.Survey.Data.Models.Example;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Tengella.Survey.Data.Models;
 
 namespace Tengella.Survey.Data;
 
@@ -9,42 +9,41 @@ public class SurveyDbContext : DbContext
     {
     }
 
-    public DbSet<Customer> Customers { get; set; }
-    public DbSet<Order> Orders { get; set; }
-    public DbSet<Product> Products { get; set; }
-    public DbSet<OrderDetail> OrderDetails { get; set; }
+    public DbSet<SurveyForm> SurveyForms { get; set; }
+    public DbSet<Question> Questions { get; set; }
+    public DbSet<Option> Options { get; set; }
+    public DbSet<Response> Responses { get; set; }
+    public DbSet<DistributionList> DistributionLists { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Seeding a customer
-        modelBuilder.Entity<Customer>().HasData(new Customer
+        // Configuring Survey entities
+        modelBuilder.Entity<SurveyForm>()
+            .HasMany(s => s.Questions)
+            .WithOne(q => q.SurveyForm)
+            .HasForeignKey(q => q.SurveyFormId);
+
+        modelBuilder.Entity<Question>()
+            .HasMany(q => q.Options)
+            .WithOne(o => o.Question)
+            .HasForeignKey(o => o.QuestionId);
+
+        modelBuilder.Entity<SurveyForm>().HasData(new SurveyForm
         {
-            CustomerId = 1,
-            FirstName = "John",
-            LastName = "Doe",
-            Email = "john.doe@example.com"
+            SurveyFormId = 1,
+            Name = "Sample Survey",
+            Type = "General",
+            ClosingDate = DateTime.Now.AddMonths(1)
         });
 
-        // Seeding products
-        modelBuilder.Entity<Product>().HasData(
-            new Product { ProductId = 1, ProductName = "Product 1", Price = 100.0m },
-            new Product { ProductId = 2, ProductName = "Product 2", Price = 200.0m },
-            new Product { ProductId = 3, ProductName = "Product 3", Price = 300.0m }
+        modelBuilder.Entity<Question>().HasData(
+            new Question { QuestionId = 1, Text = "Sample Question 1", Type = "Radio", SurveyFormId = 1 },
+            new Question { QuestionId = 2, Text = "Sample Question 2", Type = "Open", SurveyFormId = 1 }
         );
 
-        // Seeding an order
-        modelBuilder.Entity<Order>().HasData(new Order
-        {
-            OrderId = 1,
-            OrderDate = DateTime.Now,
-            CustomerId = 1 // Assuming the customer with ID 1 exists
-        });
-
-        // Seeding order details
-        modelBuilder.Entity<OrderDetail>().HasData(
-            new OrderDetail { OrderDetailId = 1, OrderId = 1, ProductId = 1, Quantity = 2 },
-            new OrderDetail { OrderDetailId = 2, OrderId = 1, ProductId = 2, Quantity = 1 },
-            new OrderDetail { OrderDetailId = 3, OrderId = 1, ProductId = 3, Quantity = 3 }
+        modelBuilder.Entity<Option>().HasData(
+            new Option { OptionId = 1, Text = "Option 1", QuestionId = 1 },
+            new Option { OptionId = 2, Text = "Option 2", QuestionId = 1 }
         );
     }
 }
