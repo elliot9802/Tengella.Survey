@@ -1,10 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Tengella.Survey.Data;
+using Tengella.Survey.WebApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddScoped<ISurveyService, SurveyService>();
 
 builder.Services.AddDbContext<SurveyDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

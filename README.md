@@ -61,32 +61,32 @@ EF Core - https://learn.microsoft.com/en-us/ef/core/
 
 ### Database Design and Backend
 1. Database Design
-- Design tables for surveys, questions, options, responses, users, and distribution lists. []
-- Create entity models in EF Core. []
+- Design tables for surveys, questions, options, responses, users, and distribution lists. [X]
+- Create entity models in EF Core. [X]
 
 2. Implement Backend Functions
-- Create controllers and services for CRUD operations on surveys and questions. []
-- Implement business logic for adding, updating, and deleting surveys and questions. []
-- Add validation rules to ensure data integrity. []
+- Create controllers and services for CRUD operations on surveys and questions. [X]
+- Implement business logic for adding, updating, and deleting surveys and questions. [X]
+- Add validation rules to ensure data integrity. [X]
 
 ### User interface for Survey Creation
 1. Create surveys
-- Design Razor views for creating and naming new surveys. []
-- Implement form submissions to create surveys in the database. []
-- Ensure surveys can be listed, viewed and deleted. []
+- Design Razor views for creating and naming new surveys. [X]
+- Implement form submissions to create surveys in the database. [X]
+- Ensure surveys can be listed, viewed and deleted. [X]
 
 2. Add Questions and Options
-- Design Razor views for adding questions and answer options. []
-- Implement dynamic form fields for adding multiple options. []
-- Validate input to ensure 2-10 options per question. []
-- Implement the ability to add open-ended questions. []
-- Add a preview feature to review the survey before saving. []
+- Design Razor views for adding questions and answer options. [X]
+- Implement dynamic form fields for adding multiple options. [X]
+- Validate input to ensure 2-10 options per question. [X]
+- Implement the ability to add open-ended questions. [X]
+- Add a preview feature to review the survey before saving. [X]
 
 ### Copy Surveys and set Closing Dates
 1. Implement Copy Function
-- Add a button to copy existing surveys. []
-- Implement backend logic to duplicate survey data. []
-- Ensure copied surveys can be edited independently. []
+- Add a button to copy existing surveys. [X]
+- Implement backend logic to duplicate survey data. [X]
+- Ensure copied surveys can be edited independently. [X]
 
 2. Add Closing Date Functionality
 - Add a date picker for setting survey closing dates. []
