@@ -1,0 +1,86 @@
+﻿@model Tengella.Survey.WebApp.Models.SurveyFormViewModel
+
+@{
+    ViewData["Title"] = Model.SurveyFormId == 0 ? "Create Survey" : "Edit Survey";
+}
+
+<div id="createSurvey">
+    <h1>@ViewData["Title"]</h1>
+
+    <form asp-action="CreateSurvey" method="post" id="surveyForm">
+        <input type="hidden" asp-for="SurveyFormId" />
+        <input type="hidden" name="questionsToRemove" id="questionsToRemove" />
+        <input type="hidden" name="optionsToRemove" id="optionsToRemove" />
+
+        <div class="card mb-3 survey-info-card">
+            <div class="card-body">
+                <div class="form-group mb-4">
+                    <label asp-for="Name" class="form-label"></label>
+                    <input asp-for="Name" class="form-control" placeholder="Survey Title" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="form-group mb-4">
+                    <label asp-for="Type" class="form-label"></label>
+                    <input asp-for="Type" class="form-control" placeholder="Survey Type" />
+                    <span asp-validation-for="Type" class="text-danger"></span>
+                </div>
+                <div class="form-group mb-4">
+                    <label asp-for="ClosingDate" class="form-label"></label>
+                    <input asp-for="ClosingDate" class="form-control" type="date" />
+                    <span asp-validation-for="ClosingDate" class="text-danger"></span>
+                </div>
+                <button type="submit" class="btn btn-primary">@ViewData["Title"]</button>
+                <button type="button" class="btn btn-secondary" id="previewSurveyBtn">Preview Survey</button>
+            </div>
+        </div>
+
+        <div id="questions-container">
+            @if (Model.Questions != null && Model.Questions.Any())
+            {
+                @foreach (var question in Model.Questions)
+                {
+                    var questionIndex = Model.Questions.ToList().IndexOf(question);
+                    <div class="card mb-3 question-card" id="question-@(questionIndex)">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="card-title" data-question-index="@questionIndex">Question @(questionIndex + 1)</h6>
+                                <button type="button" class="btn-close remove-question-btn" aria-label="Close" data-question-index="@questionIndex" data-question-id="@question.QuestionId"></button>
+                            </div>
+                            <div class="question-content mt-3">
+                                <div class="form-group">
+                                    <input type="hidden" name="Questions[@questionIndex].QuestionId" value="@question.QuestionId" />
+                                    <input name="Questions[@questionIndex].Text" class="form-control question-text" value="@question.Text" placeholder="Enter question text" />
+                                </div>
+                                <div class="form-group mt-3">
+                                    <select name="Questions[@questionIndex].Type" class="form-control question-type" data-question-index="@questionIndex">
+                                        <option value="Radio" selected="@(question.Type == "Radio" ? "selected" : null)">Multiple Choice</option>
+                                        <option value="Open" selected="@(question.Type == "Open" ? "selected" : null)">Short Answer</option>
+                                    </select>
+                                </div>
+                                <div class="options-container mt-3">
+                                    @foreach (var option in question.Options)
+                                    {
+                                        var optionIndex = question.Options.ToList().IndexOf(option);
+                                        <div class="input-group mb-2" id="question-@(questionIndex)-option-@(optionIndex)">
+                                            <input type="hidden" name="Questions[@questionIndex].Options[@optionIndex].OptionId" value="@option.OptionId" />
+                                            <input name="Questions[@questionIndex].Options[@optionIndex].Text" class="form-control" value="@option.Text" placeholder="Enter option text" />
+                                            <button type="button" class="btn-close remove-option-btn btn-outline-danger" aria-label="Close" data-question-index="@questionIndex" data-option-index="@optionIndex" data-option-id="@option.OptionId" data-question-id="@question.QuestionId"></button>
+                                        </div>
+                                    }
+                                </div>
+                                <button type="button" class="btn btn-link add-option-btn mt-3" data-question-index="@questionIndex">Add Option</button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+        <button type="button" class="btn btn-secondary" id="add-question-btn">Add Question</button>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+    <script src="~/js/survey.js"></script>
+}

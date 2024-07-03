@@ -1,8 +1,48 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model IEnumerable<Tengella.Survey.Data.Models.SurveyForm>
+
+@{
+    ViewData["Title"] = "Surveys";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<h1>Surveys</h1>
+
+<a href="@Url.Action("CreateSurvey", "Home")" class="btn btn-primary mb-3">Create New Survey</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Closing Date</th>
+            <th>Questions</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var survey in Model)
+        {
+            <tr class="@(survey.ClosingDate < DateTime.Now ? "table-danger" : "")">
+                <td>@survey.Name</td>
+                <td>@survey.Type</td>
+                <td>@survey.ClosingDate.ToShortDateString()</td>
+                <td>
+                    <ul>
+                        @foreach (var question in survey.Questions)
+                        {
+                            <li>@question.Text</li>
+                        }
+                    </ul>
+                </td>
+                <td>
+                    <a href="@Url.Action("CreateSurvey", "Home", new { id = survey.SurveyFormId })" class="btn btn-warning">Edit</a>
+                    <a href="@Url.Action("DeleteSurvey", "Home", new { id = survey.SurveyFormId })" class="btn btn-danger">Delete</a>
+                    <a href="@Url.Action("CopySurvey", "Home", new { id = survey.SurveyFormId })" class="btn btn-secondary">Copy</a>
+                    @if (survey.ClosingDate < DateTime.Now)
+                    {
+                        <span class="text-muted">Closed</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
