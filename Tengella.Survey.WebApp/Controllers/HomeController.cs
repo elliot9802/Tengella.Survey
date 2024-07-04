@@ -17,14 +17,6 @@ namespace WebApp.Controllers
         public async Task<IActionResult> Index()
         {
             var surveys = await _surveyService.GetSurveysAsync();
-            var currentDate = DateTime.Now;
-            foreach (var survey in surveys)
-            {
-                if (survey.ClosingDate < currentDate)
-                {
-                    survey.IsClosed = true;
-                }
-            }
             return View(surveys);
         }
 
@@ -146,18 +138,30 @@ namespace WebApp.Controllers
         }
 
         // GET: Home/PreviewSurvey
-        public IActionResult PreviewSurvey()
+        public async Task<IActionResult> PreviewSurvey(int? id)
         {
-            if (TempData["SurveyPreview"] is string surveyJson)
+            if (id == null)
             {
-                var survey = JsonConvert.DeserializeObject<SurveyFormViewModel>(surveyJson);
-                TempData.Keep("SurveyPreview");
-                TempData.Keep("QuestionsToRemove");
-                TempData.Keep("OptionsToRemove");
+                if (TempData["SurveyPreview"] is string surveyJson)
+                {
+                    var survey = JsonConvert.DeserializeObject<SurveyForm>(surveyJson);
+                    TempData.Keep("SurveyPreview");
+                    TempData.Keep("QuestionsToRemove");
+                    TempData.Keep("OptionsToRemove");
+                    return View(survey);
+                }
+
+                return RedirectToAction(nameof(Index));
+            }
+            else
+            {
+                var survey = await _surveyService.GetSurveyByIdAsync(id.Value);
+                if (survey == null)
+                {
+                    return NotFound();
+                }
                 return View(survey);
             }
-
-            return RedirectToAction(nameof(Index));
         }
 
         // GET: Home/CreateSurvey/5 (for returning to edit mode)

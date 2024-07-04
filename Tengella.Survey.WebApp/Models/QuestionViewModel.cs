@@ -17,6 +17,6 @@ namespace Tengella.Survey.WebApp.Models
 
         [Required]
         [OptionsCountValidation]
-        public ICollection<Option> Options { get; set; } = new List<Option>();
+        public ICollection<Option> Options { get; set; } = [];
     }
 }
