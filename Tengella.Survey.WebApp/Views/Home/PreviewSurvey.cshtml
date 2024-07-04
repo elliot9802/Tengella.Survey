@@ -32,18 +32,15 @@
                 var questionIndex = Model.Questions.ToList().IndexOf(question);
                 <div class="card mb-3 question-card" id="question-@(questionIndex)">
                     <div class="card-body">
-                        <h6 class="card-title">Question @(questionIndex + 1)</h6>
+                        <h6 class="card-title">@question.Text</h6>
                         <div class="question-content mt-3">
-                            <div class="form-group">
-                                <input name="Questions[@questionIndex].Text" class="form-control question-text" value="@question.Text" readonly />
-                            </div>
                             <div class="form-group mt-3">
                                 @if (question.Type == "Radio")
                                 {
                                     @foreach (var option in question.Options)
                                     {
                                         <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="Questions[@questionIndex].Options" id="option-@(option.OptionId)" disabled>
+                                            <input class="form-check-input" type="radio" name="Questions[@questionIndex].Options" id="option-@(option.OptionId)">
                                             <label class="form-check-label" for="option-@(option.OptionId)">
                                                 @option.Text
                                             </label>
@@ -52,7 +49,7 @@
                                 }
                                 else if (question.Type == "Open")
                                 {
-                                    <textarea name="Questions[@questionIndex].Response" class="form-control" placeholder="Enter your answer" maxlength="350" readonly></textarea>
+                                    <textarea name="Questions[@questionIndex].Response" class="form-control" placeholder="Enter your answer" maxlength="350"></textarea>
                                 }
                             </div>
                         </div>

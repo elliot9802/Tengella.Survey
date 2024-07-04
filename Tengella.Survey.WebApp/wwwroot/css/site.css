@@ -1,24 +1,25 @@
 html {
-  font-size: 14px;
+    font-size: 14px;
+    position: relative;
+    min-height: 100%;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+}
+
+main {
+    min-height: 80vh !important;
 }
 
 #createSurvey {
@@ -104,4 +105,45 @@ body {
 
 .btn-link {
     padding-left: 0;
+}
+
+.survey-card {
+    width: 300px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+    .survey-card:hover {
+        transform: translateY(-5px);
+    }
+
+.card-footer {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+    background-color: #f8f9fa;
+}
+
+    .card-footer .btn-link {
+        color: #333;
+        font-size: 1.2em;
+    }
+
+        .card-footer .btn-link:hover {
+            color: #007bff;
+        }
+
+.badge-danger {
+    background-color: #dc3545;
+    color: white;
+    padding: 0.5em 0.75em;
+    font-size: 0.75em;
+    font-weight: bold;
+    border-radius: 0.25em;
+    position: absolute;
+    top: 10px;
+    right: 10px;
 }

@@ -4,45 +4,49 @@
     ViewData["Title"] = "Surveys";
 }
 
-<h1>Surveys</h1>
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
+            <div class="card survey-card w-100">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                    <i class="fas fa-plus-circle fa-3x mb-3"></i>
+                    <h5 class="card-title">Create New Survey</h5>
+                </div>
+                <a href="@Url.Action("CreateSurvey", "Home")" class="stretched-link"></a>
+            </div>
+        </div>
 
-<a href="@Url.Action("CreateSurvey", "Home")" class="btn btn-primary mb-3">Create New Survey</a>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Closing Date</th>
-            <th>Questions</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
         @foreach (var survey in Model)
         {
-            <tr class="@(survey.ClosingDate < DateTime.Now ? "table-danger" : "")">
-                <td>@survey.Name</td>
-                <td>@survey.Type</td>
-                <td>@survey.ClosingDate.ToShortDateString()</td>
-                <td>
-                    <ul>
-                        @foreach (var question in survey.Questions)
-                        {
-                            <li>@question.Text</li>
-                        }
-                    </ul>
-                </td>
-                <td>
-                    <a href="@Url.Action("CreateSurvey", "Home", new { id = survey.SurveyFormId })" class="btn btn-warning">Edit</a>
-                    <a href="@Url.Action("DeleteSurvey", "Home", new { id = survey.SurveyFormId })" class="btn btn-danger">Delete</a>
-                    <a href="@Url.Action("CopySurvey", "Home", new { id = survey.SurveyFormId })" class="btn btn-secondary">Copy</a>
+            <div class="col-12 col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
+                <div class="card survey-card w-100">
                     @if (survey.ClosingDate < DateTime.Now)
                     {
-                        <span class="text-muted">Closed</span>
+                        <div class="badge badge-danger" style="top: 10px; right: 10px;">Closed</div>
                     }
-                </td>
-            </tr>
+                    <div class="card-body">
+                        <h5 class="card-title">@survey.Name</h5>
+                        <p class="card-text">@survey.Type</p>
+                        <p class="card-text">Survey closes: @survey.ClosingDate.ToShortDateString()</p>
+                        <p class="card-text">@survey.Questions.Count() @(survey.Questions.Count() == 1 ? "question" : "questions")</p>
+                        <ul>
+                            @foreach (var question in survey.Questions)
+                            {
+                                <li>
+                                    @question.Text
+                                    @(question.Options.Count() > 0 ? $" ({question.Options.Count()} options)" : "")
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                    <div class="card-footer d-flex justify-content-around">
+                        <a href="@Url.Action("PreviewSurvey", "Home", new { id = survey.SurveyFormId })" class="btn btn-link"><i class="fas fa-eye"></i></a>
+                        <a href="@Url.Action("CreateSurvey", "Home", new { id = survey.SurveyFormId })" class="btn btn-link"><i class="fas fa-edit"></i></a>
+                        <a href="@Url.Action("DeleteSurvey", "Home", new { id = survey.SurveyFormId })" class="btn btn-link"><i class="fas fa-trash-alt"></i></a>
+                        <a href="@Url.Action("CopySurvey", "Home", new { id = survey.SurveyFormId })" class="btn btn-link"><i class="fas fa-copy"></i></a>
+                    </div>
+                </div>
+            </div>
         }
-    </tbody>
-</table>
+    </div>
+</div>

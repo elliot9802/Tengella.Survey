@@ -89,9 +89,9 @@ EF Core - https://learn.microsoft.com/en-us/ef/core/
 - Ensure copied surveys can be edited independently. [X]
 
 2. Add Closing Date Functionality
-- Add a date picker for setting survey closing dates. []
-- Implement backend logic to store and enforce closing dates. []
-- Display appropriate messages for surveys past their closing dates. []
+- Add a date picker for setting survey closing dates. [X]
+- Implement backend logic to store and enforce closing dates. [X]
+- Display appropriate messages for surveys past their closing dates. [X]
 
 ### Survey Distribution
 1. Mock Email Function

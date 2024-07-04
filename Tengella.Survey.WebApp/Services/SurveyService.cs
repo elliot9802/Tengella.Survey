@@ -11,12 +11,19 @@ namespace Tengella.Survey.WebApp.Services
 
         public async Task<IEnumerable<SurveyForm>> GetSurveysAsync()
         {
-            return await _context.SurveyForms.Include(s => s.Questions).ThenInclude(q => q.Options).ToListAsync();
+            return await _context.SurveyForms
+                .Include(s => s.Questions)
+                .ThenInclude(q => q.Options)
+                .OrderByDescending(s => s.ClosingDate)
+                .ToListAsync();
         }
 
         public async Task<SurveyForm?> GetSurveyByIdAsync(int id)
         {
-            return await _context.SurveyForms.Include(s => s.Questions).ThenInclude(q => q.Options).FirstOrDefaultAsync(s => s.SurveyFormId == id);
+            return await _context.SurveyForms
+                .Include(s => s.Questions)
+                .ThenInclude(q => q.Options)
+                .FirstOrDefaultAsync(s => s.SurveyFormId == id);
         }
 
         public async Task CreateSurveyAsync(SurveyForm survey)
