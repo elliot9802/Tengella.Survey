@@ -28,7 +28,6 @@ namespace Tengella.Survey.WebApp.Services
 
         public async Task CreateSurveyAsync(SurveyForm survey)
         {
-            _logger.LogInformation("Creating new survey with Name: {Name}, Questions Count: {QuestionsCount}", survey.Name, survey.Questions.Count);
             _context.SurveyForms.Add(survey);
             await _context.SaveChangesAsync();
         }
@@ -81,7 +80,6 @@ namespace Tengella.Survey.WebApp.Services
 
             await _context.SaveChangesAsync();
         }
-
 
         public async Task DeleteSurveyAsync(int id)
         {
