@@ -1,9 +1,6 @@
 $(function () {
     let questionsToRemove = [];
     let optionsToRemove = [];
-
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('closingDateInput').value = today;
     $('#previewSurveyBtn').on('click', function () {
         if ($('#surveyForm').valid()) {
             $('<input>').attr({
@@ -32,6 +29,17 @@ $(function () {
             'Name': { required: "Survey name is required", maxlength: "Survey name cannot exceed 100 characters" },
             'Type': { required: "Survey type is required", maxlength: "Survey type cannot exceed 50 characters" },
             'ClosingDate': { required: "Closing date is required", date: "Please enter a valid date" }
+        },
+        errorElement: 'div',
+        errorClass: 'text-danger'
+    });
+
+    $('#responseForm').validate({
+        rules: {
+            'Answer': { required: true, maxlength: 350 },
+        },
+        messages: {
+            'Answer': { required: "Survey answer is required", maxlength: "Survey answer cannot exceed 350 characters" }
         },
         errorElement: 'div',
         errorClass: 'text-danger'
@@ -109,16 +117,8 @@ $(function () {
         $('.remove-question-btn').off('click').on('click', handleRemoveQuestionClick);
         $('.question-type').off('change').on('change', handleQuestionTypeChange);
         $('.remove-option-btn').off('click').on('click', handleRemoveOptionClick);
-        $('.card-body .card-title').off('click').on('click', function () {
-            const card = $(this).closest('.question-card');
-            minimizeAllExcept(card);
-            card.find('.question-content').slideDown();
-        });
     }
 
-    function minimizeAllExcept(currentCard) {
-        $('.question-card').not(currentCard).find('.question-content').slideUp();
-    }
 
     function handleAddOptionClick(event) {
         const questionIndex = $(event.target).data('question-index');
