@@ -14,36 +14,73 @@ public class SurveyDbContext : DbContext
     public DbSet<Option> Options { get; set; }
     public DbSet<Response> Responses { get; set; }
     public DbSet<DistributionList> DistributionLists { get; set; }
+    public DbSet<SurveyAnalysis> SurveyAnalyses { get; set; }
+    public DbSet<QuestionAnalysis> QuestionAnalyses { get; set; }
+    public DbSet<OptionAnalysis> OptionAnalyses { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Configuring Survey entities
+        // SurveyForm to Question relationship
         modelBuilder.Entity<SurveyForm>()
             .HasMany(s => s.Questions)
             .WithOne(q => q.SurveyForm)
-            .HasForeignKey(q => q.SurveyFormId);
+            .HasForeignKey(q => q.SurveyFormId)
+            .OnDelete(DeleteBehavior.Cascade);
 
+        // Question to Option relationship
         modelBuilder.Entity<Question>()
             .HasMany(q => q.Options)
             .WithOne(o => o.Question)
-            .HasForeignKey(o => o.QuestionId);
+            .HasForeignKey(o => o.QuestionId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<SurveyForm>().HasData(new SurveyForm
-        {
-            SurveyFormId = 1,
-            Name = "Sample Survey",
-            Type = "General",
-            ClosingDate = DateTime.Now.AddMonths(1)
-        });
+        // Question to Response relationship
+        modelBuilder.Entity<Question>()
+            .HasMany(q => q.Responses)
+            .WithOne(r => r.Question)
+            .HasForeignKey(r => r.QuestionId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Question>().HasData(
-            new Question { QuestionId = 1, Text = "Sample Question 1", Type = "Radio", SurveyFormId = 1 },
-            new Question { QuestionId = 2, Text = "Sample Question 2", Type = "Open", SurveyFormId = 1 }
-        );
+        // Response to SurveyForm relationship
+        modelBuilder.Entity<Response>()
+            .HasOne(r => r.SurveyForm)
+            .WithMany()
+            .HasForeignKey(r => r.SurveyFormId)
+            .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Option>().HasData(
-            new Option { OptionId = 1, Text = "Option 1", QuestionId = 1 },
-            new Option { OptionId = 2, Text = "Option 2", QuestionId = 1 }
-        );
+        // Response to Option relationship
+        modelBuilder.Entity<Response>()
+            .HasOne(r => r.Option)
+            .WithMany()
+            .HasForeignKey(r => r.OptionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // SurveyAnalysis to QuestionAnalysis relationship
+        modelBuilder.Entity<SurveyAnalysis>()
+            .HasMany(sa => sa.QuestionAnalyses)
+            .WithOne(qa => qa.SurveyAnalysis)
+            .HasForeignKey(qa => qa.SurveyAnalysisId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // QuestionAnalysis to OptionAnalysis relationship
+        modelBuilder.Entity<QuestionAnalysis>()
+            .HasMany(qa => qa.OptionAnalyses)
+            .WithOne(oa => oa.QuestionAnalysis)
+            .HasForeignKey(oa => oa.QuestionAnalysisId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // QuestionAnalysis to Question relationship
+        modelBuilder.Entity<QuestionAnalysis>()
+            .HasOne(qa => qa.Question)
+            .WithMany()
+            .HasForeignKey(qa => qa.QuestionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // OptionAnalysis to Option relationship
+        modelBuilder.Entity<OptionAnalysis>()
+            .HasOne(oa => oa.Option)
+            .WithMany()
+            .HasForeignKey(oa => oa.OptionId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
