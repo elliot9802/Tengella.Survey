@@ -1,0 +1,35 @@
+$(function () {
+    const totalResponses = $('#questions-container').data('total-responses');
+    const newResponses = $('#questions-container').data('new-responses');
+
+    $('.show-more-btn').on('click', function () {
+        const $this = $(this);
+        const questionId = $this.data('question-id');
+        const responsesList = $('#responses-' + questionId);
+        const currentCount = responsesList.children().length;
+
+        const responses = newResponses[questionId].slice(currentCount, currentCount + 10);
+
+        responses.forEach(function (response) {
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+            li.innerText = response;
+            responsesList.append(li);
+        });
+
+        if (responsesList.children().length >= totalResponses[questionId]) {
+            $this.hide();
+        }
+        $('.minimize-btn[data-question-id="' + questionId + '"]').removeClass('d-none');
+    });
+
+    $('.minimize-btn').on('click', function () {
+        const $this = $(this);
+        const questionId = $this.data('question-id');
+        const responsesList = $('#responses-' + questionId);
+
+        responsesList.children().slice(10).remove();
+        $this.addClass('d-none');
+        $('.show-more-btn[data-question-id="' + questionId + '"]').show();
+    });
+});

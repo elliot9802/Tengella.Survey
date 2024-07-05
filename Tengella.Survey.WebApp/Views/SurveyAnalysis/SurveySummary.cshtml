@@ -1,0 +1,37 @@
+﻿@model Tengella.Survey.WebApp.Services.SurveySummary
+
+@{
+    ViewData["Title"] = "Survey Summary";
+}
+
+<h1>Survey Summary</h1>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Closing Date</th>
+                <th>Total Responses</th>
+                <th>Total Times Taken</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var survey in Model.Surveys)
+            {
+                <tr>
+                    <td>@survey.Name</td>
+                    <td>@survey.Type</td>
+                    <td>@survey.ClosingDate.ToShortDateString()</td>
+                    <td>@survey.TotalResponses</td>
+                    <td>@survey.TotalTimesTaken</td>
+                    <td>
+                        <a href="@Url.Action("SurveyAnalysis", "SurveyAnalysis", new { id = survey.SurveyFormId })" class="btn btn-primary">View Analysis</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

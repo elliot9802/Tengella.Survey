@@ -1,0 +1,77 @@
+﻿@model Tengella.Survey.WebApp.Services.QuestionTrendAnalysis
+
+@{
+    ViewData["Title"] = "Question Trend Analysis";
+}
+
+<h1 class="text-center mt-4">Question Trend Analysis</h1>
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col text-center">
+            <h2>Question ID: @Model.QuestionId</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <h4>Trends:</h4>
+            <ul class="list-group">
+                @foreach (var trend in Model.Trends)
+                {
+                    <li class="list-group-item">
+                        <strong>Survey: @trend.SurveyFormName</strong><br />
+                        Total Responses: @trend.TotalResponses<br />
+                        Average Rating: @trend.AverageRating
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <!-- Placeholder for Chartist or other chart library -->
+    <div class="row mt-5">
+        <div class="col">
+            <div class="ct-chart ct-golden-section"></div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/chartist/dist/chartist.min.css" rel="stylesheet" />
+    <style>
+        .ct-series-a .ct-line, .ct-series-a .ct-point {
+            stroke: #00c853;
+        }
+
+        .ct-series-b .ct-line, .ct-series-b .ct-point {
+            stroke: #ffab00;
+        }
+
+        .ct-chart {
+            position: relative;
+            height: 400px;
+        }
+
+        .list-group-item {
+            margin-bottom: 10px;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chartist/dist/chartist.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            new Chartist.Line('.ct-chart', {
+                labels: @Html.Raw(Json.Serialize(Model.Trends.Select(t => t.SurveyFormName).ToArray())),
+                series: [
+        @Html.Raw(Json.Serialize(Model.Trends.Select(t => t.TotalResponses).ToArray()))
+                        ]
+            }, {
+                low: 0,
+                showArea: true
+            });
+        });
+    </script>
+}

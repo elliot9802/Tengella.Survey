@@ -109,13 +109,13 @@ EF Core - https://learn.microsoft.com/en-us/ef/core/
 
 ### Reporting and Analysis
 1. Display Survey Data
-- Create views to list previous surveys with metadata (date, type, recipients, responses). []
-- Design detailed views to display individual survey results. []
-- Implement backend logic to aggregate survey data for display. []
+- Create views to list previous surveys with metadata (date, type, recipients, responses). [X]
+- Design detailed views to display individual survey results. [X]
+- Implement backend logic to aggregate survey data for display. [X]
 
 2. Graphical Representations and Trends
-- Integrate Chartist (or similar library) for graphical representations. []
-- Create charts and graphs to visualize survey data. []
+- Integrate Chartist (or similar library) for graphical representations. [X]
+- Create charts and graphs to visualize survey data. [X]
 - Implement functionality to compare trends over time for specific questions. []
 - Add options for different chart types (bar, pie, line). []
 
