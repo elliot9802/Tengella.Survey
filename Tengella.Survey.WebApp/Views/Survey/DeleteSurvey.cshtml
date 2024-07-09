@@ -1,4 +1,4 @@
-﻿@model Tengella.Survey.Data.Models.SurveyForm
+﻿@model SurveyForm
 
 @{
     ViewData["Title"] = "Delete Survey";
@@ -13,5 +13,5 @@
 <form asp-action="DeleteSurveyConfirmed" method="post">
     <input type="hidden" asp-for="SurveyFormId" />
     <button type="submit" class="btn btn-danger">Delete</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Cancel</a>
 </form>

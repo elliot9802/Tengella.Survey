@@ -1,4 +1,4 @@
-namespace WebApp.Models
+namespace Tengella.Survey.WebApp.Models
 {
     public class ErrorViewModel
     {

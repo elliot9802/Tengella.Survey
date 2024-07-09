@@ -1,4 +1,4 @@
-﻿@model Tengella.Survey.WebApp.Models.SurveyFormViewModel
+﻿@model SurveyFormViewModel
 
 @{
     ViewData["Title"] = Model.SurveyFormId == 0 ? "Create Survey" : "Edit Survey";
@@ -80,7 +80,5 @@
 </div>
 
 @section Scripts {
-    <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
     <script src="~/js/survey.js"></script>
 }
