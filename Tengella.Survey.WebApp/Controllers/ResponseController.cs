@@ -16,6 +16,12 @@ namespace Tengella.Survey.WebApp.Controllers
             {
                 return NotFound();
             }
+
+            if (survey.ClosingDate < DateTime.Today)
+            {
+                TempData["ErrorMessage"] = "This survey is closed and cannot be responded to.";
+                return RedirectToAction("Index", "Home");
+            }
             return View(survey);
         }
 
@@ -29,8 +35,14 @@ namespace Tengella.Survey.WebApp.Controllers
             }
 
             var responses = await _responseService.CreateResponsesAsync(survey, form);
+            if (!responses.Any())
+            {
+                TempData["ErrorMessage"] = "This survey is closed and cannot be responded to.";
+                return RedirectToAction("Index", "Home");
+            }
             _logger.LogInformation("Responses: {Response}", responses.ToString());
             await _responseService.SaveResponsesAsync(responses);
+            TempData["SuccessMessage"] = "Thank you for your response!";
 
             return RedirectToAction(nameof(Index), "Home");
         }

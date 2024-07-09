@@ -1,46 +1,82 @@
 ﻿@model IEnumerable<SurveyForm>
 
 @{
+    var errorMessage = TempData["ErrorMessage"] as string;
+    var successMessage = TempData["SuccessMessage"] as string;
     ViewData["Title"] = "Surveys";
 }
 
-<div class="container">
+<div class="container mt-4">
+    <div class="row mb-4">
+        @* TempData Messages *@
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="col-12">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @errorMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="col-12">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @successMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        }
+    </div>
+
     <div class="row">
-        <div class="col-12 col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
+        <div class="col-3 mb-4 d-flex align-items-stretch">
             <div class="card survey-card w-100">
                 <div class="card-body d-flex flex-column align-items-center justify-content-center">
                     <i class="fas fa-plus-circle fa-3x mb-3"></i>
-                    <h5 class="card-title">Create New Survey</h5>
+                    <h5 class="card-title">New</h5>
                 </div>
-                <a href="@Url.Action("CreateSurvey", "Survey")" title="Create Survey" class="stretched-link"></a>
+                <a href="@Url.Action("CreateSurvey", "Survey")" title="Create New Survey" class="stretched-link"></a>
             </div>
         </div>
-        <div class="col-12 col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
+        <div class="col-3 mb-4 d-flex align-items-stretch">
             <div class="card survey-card w-100">
                 <div class="card-body d-flex flex-column align-items-center justify-content-center">
                     <i class="fas fa-chart-bar fa-3x mb-3"></i>
-                    <h5 class="card-title">Survey Summary</h5>
+                    <h5 class="card-title">Summary</h5>
                 </div>
-                <a href="@Url.Action("SurveySummary", "SurveyAnalysis")" title="View Summary" class="stretched-link"></a>
+                <a href="@Url.Action("SurveySummary", "SurveyAnalysis")" title="Survey Summary" class="stretched-link"></a>
             </div>
         </div>
-        <div class="col-12 col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
+        <div class="col-3 mb-4 d-flex align-items-stretch">
             <div class="card survey-card w-100">
                 <div class="card-body d-flex flex-column align-items-center justify-content-center">
                     <i class="fas fa-address-book fa-3x mb-3"></i>
-                    <h5 class="card-title">Distribution List</h5>
+                    <h5 class="card-title">Recipients</h5>
                 </div>
-                <a href="@Url.Action("DistributionList", "Distribution")" title="View Distribution List" class="stretched-link"></a>
+                <a href="@Url.Action("Index", "Recipient")" title="Manage Recipients" class="stretched-link"></a>
             </div>
         </div>
+        <div class="col-3 mb-4 d-flex align-items-stretch">
+            <div class="card survey-card w-100">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                    <i class="fas fa-envelope fa-3x mb-3"></i>
+                    <h5 class="card-title">Email</h5>
+                </div>
+                <a href="@Url.Action("Index", "EmailTemplate")" title="Manage Email Templates" class="stretched-link"></a>
+            </div>
+        </div>
+    </div>
 
+    <div class="row">
         @foreach (var survey in Model)
         {
             <div class="col-12 col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
                 <div class="card survey-card w-100">
                     @if (survey.ClosingDate < DateTime.Today)
                     {
-                        <div class="badge badge-danger" style="top: 10px; right: 10px;">Closed</div>
+                        <span class="badge bg-danger position-absolute" style="top: 10px; right: 10px;">Closed</span>
                     }
                     <div class="card-body">
                         <h5 class="card-title">@survey.Name</h5>
@@ -58,7 +94,11 @@
                         </ul>
                     </div>
                     <div class="card-footer d-flex justify-content-around">
-                        <a href="@Url.Action("RespondSurvey", "Response", new { id = survey.SurveyFormId })" title="Take Survey" class="btn btn-link"><i class="fas fa-arrow-right"></i></a>
+                        <a href="@Url.Action("RespondSurvey", "Response", new { id = survey.SurveyFormId })"
+                           title="Take Survey"
+                           class="btn btn-link @(survey.ClosingDate < DateTime.Today ? "text-muted" : "")">
+                            <i class="fas fa-reply"></i>
+                        </a>
                         <a href="@Url.Action("PreviewSurvey", "Survey", new { id = survey.SurveyFormId })" title="Preview Survey" class="btn btn-link"><i class="fas fa-eye"></i></a>
                         <a href="@Url.Action("CreateSurvey", "Survey", new { id = survey.SurveyFormId })" title="Edit Survey" class="btn btn-link"><i class="fas fa-edit"></i></a>
                         <a href="@Url.Action("DeleteSurvey", "Survey", new { id = survey.SurveyFormId })" title="Delete Survey" class="btn btn-link"><i class="fas fa-trash-alt"></i></a>
