@@ -106,16 +106,28 @@ namespace Tengella.Survey.WebApp.Controllers
             {
                 return NotFound();
             }
-            return View(survey);
+
+            var model = new DeleteViewModel
+            {
+                Title = "Delete Survey",
+                EntityName = survey.Name,
+                Properties = new Dictionary<string, string>
+                {
+                    { "SurveyFormId", survey.SurveyFormId.ToString() },
+                    { "Name", survey.Name }
+                },
+                DeleteAction = nameof(DeleteSurveyConfirmed),
+                ReturnController = "Survey"
+            };
+
+            return View("Delete", model);
         }
 
-        // POST: Survey/DeleteSurvey/5
-        [HttpPost, ActionName("DeleteSurveyConfirmed")]
+        [HttpPost]
         public async Task<IActionResult> DeleteSurveyConfirmed(int surveyFormId)
         {
             await _surveyService.DeleteSurveyAsync(surveyFormId);
-            return RedirectToAction("Index", "Home");
-
+            return RedirectToAction(nameof(Index), "Home");
         }
 
         // GET: Survey/CopySurvey/5
