@@ -3,16 +3,14 @@ using Tengella.Survey.Data.Models;
 
 namespace Tengella.Survey.Data;
 
-public class SurveyDbContext : DbContext
+public class SurveyDbContext(DbContextOptions<SurveyDbContext> options) : DbContext(options)
 {
-    public SurveyDbContext(DbContextOptions<SurveyDbContext> options) : base(options)
-    {
-    }
-
     public DbSet<SurveyForm> SurveyForms { get; set; }
     public DbSet<Question> Questions { get; set; }
     public DbSet<Option> Options { get; set; }
     public DbSet<Response> Responses { get; set; }
+    public DbSet<EmailTemplate> EmailTemplates { get; set; }
+    public DbSet<Recipient> Recipients { get; set; }
     public DbSet<DistributionList> DistributionLists { get; set; }
     public DbSet<SurveyAnalysis> SurveyAnalyses { get; set; }
     public DbSet<QuestionAnalysis> QuestionAnalyses { get; set; }
