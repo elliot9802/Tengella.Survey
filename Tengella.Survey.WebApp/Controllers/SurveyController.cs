@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Tengella.Survey.Business.Interfaces;
 using Tengella.Survey.Data.Models;
 using Tengella.Survey.WebApp.Models;
-using Tengella.Survey.WebApp.Services;
 
 namespace Tengella.Survey.WebApp.Controllers
 {
@@ -156,7 +156,7 @@ namespace Tengella.Survey.WebApp.Controllers
             }
         }
 
-        // GET: Survey/CreateSurvey/5 (for returning to edit mode)
+        // GET: Survey/CreateSurveyFromPreview (for returning to edit mode)
         public IActionResult CreateSurveyFromPreview()
         {
             if (TempData["SurveyPreview"] is string surveyJson)

@@ -17,6 +17,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <ProjectReference Include="..\Tengella.Survey.Business\Tengella.Survey.Business.csproj" />
     <ProjectReference Include="..\Tengella.Survey.Data\Tengella.Survey.Data.csproj" />
   </ItemGroup>
 

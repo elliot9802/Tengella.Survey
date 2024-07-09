@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Tengella.Survey.WebApp.Services;
+using Tengella.Survey.Business.Interfaces;
 
 namespace Tengella.Survey.WebApp.Controllers
 {

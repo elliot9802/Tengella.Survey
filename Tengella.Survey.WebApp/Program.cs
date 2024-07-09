@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Tengella.Survey.Business.Interfaces;
+using Tengella.Survey.Business.Services;
 using Tengella.Survey.Data;
-using Tengella.Survey.WebApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

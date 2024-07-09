@@ -1,7 +1,9 @@
-﻿using Tengella.Survey.Data;
+﻿using Microsoft.AspNetCore.Http;
+using Tengella.Survey.Business.Interfaces;
+using Tengella.Survey.Data;
 using Tengella.Survey.Data.Models;
 
-namespace Tengella.Survey.WebApp.Services
+namespace Tengella.Survey.Business.Services
 {
     public class ResponseService(SurveyDbContext context) : IResponseService
     {
@@ -10,6 +12,12 @@ namespace Tengella.Survey.WebApp.Services
         {
             var responses = new List<Response>();
             var responseGroupId = Guid.NewGuid();
+            var today = DateTime.Today;
+
+            if (survey.ClosingDate < today)
+            {
+                return Task.FromResult(Enumerable.Empty<Response>());
+            }
 
             foreach (var question in survey.Questions)
             {
@@ -24,7 +32,7 @@ namespace Tengella.Survey.WebApp.Services
                             SurveyFormId = survey.SurveyFormId,
                             QuestionId = question.QuestionId,
                             OptionId = optionId,
-                            ResponseDate = DateTime.Today,
+                            ResponseDate = today,
                             ResponseGroupId = responseGroupId
                         };
                         responses.Add(response);
@@ -40,7 +48,7 @@ namespace Tengella.Survey.WebApp.Services
                             SurveyFormId = survey.SurveyFormId,
                             QuestionId = question.QuestionId,
                             TextResponse = textResponse,
-                            ResponseDate = DateTime.Today,
+                            ResponseDate = today,
                             ResponseGroupId = responseGroupId
                         };
                         responses.Add(response);

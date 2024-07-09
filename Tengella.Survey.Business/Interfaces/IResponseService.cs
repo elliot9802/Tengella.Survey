@@ -1,6 +1,7 @@
-﻿using Tengella.Survey.Data.Models;
+﻿using Microsoft.AspNetCore.Http;
+using Tengella.Survey.Data.Models;
 
-namespace Tengella.Survey.WebApp.Services
+namespace Tengella.Survey.Business.Interfaces
 {
     public interface IResponseService
     {

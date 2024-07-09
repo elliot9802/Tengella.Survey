@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using Tengella.Survey.WebApp.Services;
-using WebApp.Models;
+using Tengella.Survey.Business.Interfaces;
+using Tengella.Survey.WebApp.Models;
 
 namespace WebApp.Controllers
 {

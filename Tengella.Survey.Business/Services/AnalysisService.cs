@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Tengella.Survey.Business.DTOs;
+using Tengella.Survey.Business.Interfaces;
 using Tengella.Survey.Data;
 using Tengella.Survey.Data.Models;
 
-namespace Tengella.Survey.WebApp.Services
+namespace Tengella.Survey.Business.Services
 {
     public class AnalysisService(SurveyDbContext context) : IAnalysisService
     {
@@ -107,33 +109,5 @@ namespace Tengella.Survey.WebApp.Services
                     }).ToList()
             };
         }
-    }
-
-    public class SurveySummary
-    {
-        public List<SurveySummaryItem> Surveys { get; set; } = new();
-    }
-
-    public class SurveySummaryItem
-    {
-        public int SurveyFormId { get; set; }
-        public string Name { get; set; }
-        public string Type { get; set; }
-        public DateTime ClosingDate { get; set; }
-        public int TotalResponses { get; set; }
-        public int TotalTimesTaken { get; set; }
-    }
-
-    public class QuestionTrendAnalysis
-    {
-        public int QuestionId { get; set; }
-        public List<QuestionTrend> Trends { get; set; } = new();
-    }
-
-    public class QuestionTrend
-    {
-        public string SurveyFormName { get; set; }
-        public int TotalResponses { get; set; }
-        public double AverageRating { get; set; }
     }
 }

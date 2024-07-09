@@ -1,7 +1,7 @@
-﻿using Tengella.Survey.Data.Models;
-using static Tengella.Survey.WebApp.Services.AnalysisService;
+﻿using Tengella.Survey.Business.DTOs;
+using Tengella.Survey.Data.Models;
 
-namespace Tengella.Survey.WebApp.Services
+namespace Tengella.Survey.Business.Interfaces
 {
     public interface IAnalysisService
     {

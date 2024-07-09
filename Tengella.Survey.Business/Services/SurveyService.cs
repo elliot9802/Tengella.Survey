@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Tengella.Survey.Business.Interfaces;
 using Tengella.Survey.Data;
 using Tengella.Survey.Data.Models;
 
-namespace Tengella.Survey.WebApp.Services
+namespace Tengella.Survey.Business.Services
 {
     public class SurveyService(SurveyDbContext context, ILogger<SurveyService> logger) : ISurveyService
     {
