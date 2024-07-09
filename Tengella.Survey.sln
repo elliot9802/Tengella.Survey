@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33717.318
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tengella.Survey.WebApp", "Tengella.Survey.WebApp\Tengella.Survey.WebApp.csproj", "{DB8840F0-541D-41A6-8F47-E0CB54EA903E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tengella.Survey.WebApp", "Tengella.Survey.WebApp\Tengella.Survey.WebApp.csproj", "{DB8840F0-541D-41A6-8F47-E0CB54EA903E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tengella.Survey.Data", "Tengella.Survey.Data\Tengella.Survey.Data.csproj", "{84734949-7C46-44C6-A666-BE6344DDCB61}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tengella.Survey.Data", "Tengella.Survey.Data\Tengella.Survey.Data.csproj", "{84734949-7C46-44C6-A666-BE6344DDCB61}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tengella.Survey.Business", "Tengella.Survey.Business\Tengella.Survey.Business.csproj", "{9AD81898-900D-4548-9EB6-B2B0E45E3DB6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{84734949-7C46-44C6-A666-BE6344DDCB61}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84734949-7C46-44C6-A666-BE6344DDCB61}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{84734949-7C46-44C6-A666-BE6344DDCB61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9AD81898-900D-4548-9EB6-B2B0E45E3DB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AD81898-900D-4548-9EB6-B2B0E45E3DB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AD81898-900D-4548-9EB6-B2B0E45E3DB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AD81898-900D-4548-9EB6-B2B0E45E3DB6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
