@@ -3,5 +3,6 @@
     public class SurveySummary
     {
         public List<SurveySummaryItem> Surveys { get; set; } = [];
+        public Dictionary<string, int> RepeatedQuestions { get; set; } = [];
     }
 }

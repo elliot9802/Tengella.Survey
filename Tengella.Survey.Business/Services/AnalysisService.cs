@@ -103,11 +103,23 @@ namespace Tengella.Survey.Business.Services
                     .Select(grp => new QuestionTrend
                     {
                         SurveyFormName = grp.Key,
-                        TotalResponses = grp.SelectMany(q => q.Responses).Count(),
+                        TotalResponses = grp.Sum(q => q.Responses.Count),
                         AverageRating = grp.SelectMany(q => q.Responses)
                             .Average(r => double.TryParse(r.TextResponse, out var val) ? val : 0)
                     }).ToList()
             };
+        }
+
+        public async Task<Dictionary<string, int>> GetRepeatedQuestionsAsync()
+        {
+            return await _context.Questions
+                .GroupBy(q => q.Text)
+                .Select(group => new
+                {
+                    Text = group.Key,
+                    Count = group.Count()
+                })
+                .ToDictionaryAsync(g => g.Text, g => g.Count);
         }
     }
 }

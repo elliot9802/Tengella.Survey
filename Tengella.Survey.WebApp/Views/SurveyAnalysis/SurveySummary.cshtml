@@ -35,3 +35,31 @@
         </tbody>
     </table>
 </div>
+
+<h2>Repeated Questions</h2>
+@if (Model.RepeatedQuestions.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Question</th>
+                    <th>Times Repeated</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var question in Model.RepeatedQuestions)
+                {
+                    <tr>
+                        <td>@question.Key</td>
+                        <td>@question.Value</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <p>No repeated questions found.</p>
+}

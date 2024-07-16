@@ -21,6 +21,8 @@ namespace Tengella.Survey.WebApp.Controllers
         public async Task<IActionResult> SurveySummary()
         {
             var summary = await _analysisService.GetSurveySummaryAsync();
+            var repeatedQuestions = await _analysisService.GetRepeatedQuestionsAsync();
+            summary.RepeatedQuestions = repeatedQuestions.Where(q => q.Value > 1).ToDictionary(q => q.Key, q => q.Value);
             return View(summary);
         }
 

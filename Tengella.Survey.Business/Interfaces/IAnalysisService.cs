@@ -10,5 +10,7 @@ namespace Tengella.Survey.Business.Interfaces
 
         Task<SurveySummary> GetSurveySummaryAsync();
 
+        Task<Dictionary<string, int>> GetRepeatedQuestionsAsync();
+
     }
 }
