@@ -1,4 +1,4 @@
-﻿@model SurveyForm
+﻿@model SurveyFormViewModel
 
 @{
     ViewData["Title"] = "Preview Survey";
@@ -68,7 +68,7 @@
     <script>
         $(document).ready(function () {
             $('#editSurveyBtn').on('click', function () {
-                window.location.href = '@Url.Action("CreateSurveyFromPreview", "Survey")';
+                window.location.href = '@Url.Action("CreateSurvey", "Survey")';
             });
         });
     </script>

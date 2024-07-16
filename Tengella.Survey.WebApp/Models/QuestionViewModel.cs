@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Tengella.Survey.Data.Models;
-//using Tengella.Survey.WebApp.Validation;
 
 namespace Tengella.Survey.WebApp.Models
 {

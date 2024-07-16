@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Text;
 using Tengella.Survey.Business.Interfaces;
 using Tengella.Survey.Data.Models;
 using Tengella.Survey.WebApp.Models;
@@ -14,6 +15,15 @@ namespace Tengella.Survey.WebApp.Controllers
         // GET: Survey/CreateSurvey/5
         public async Task<IActionResult> CreateSurvey(int? id)
         {
+            SurveyFormViewModel? surveyViewModel;
+
+            if (id == null && HttpContext.Session.TryGetValue("SurveyPreview", out byte[]? surveyData))
+            {
+                var surveyJson = Encoding.UTF8.GetString(surveyData);
+                surveyViewModel = JsonConvert.DeserializeObject<SurveyFormViewModel>(surveyJson) ?? new SurveyFormViewModel();
+                return View(surveyViewModel);
+            }
+
             if (id == null)
             {
                 return View(new SurveyFormViewModel());
@@ -25,7 +35,7 @@ namespace Tengella.Survey.WebApp.Controllers
                 return NotFound();
             }
 
-            var surveyViewModel = new SurveyFormViewModel
+            surveyViewModel = new SurveyFormViewModel
             {
                 SurveyFormId = survey.SurveyFormId,
                 Name = survey.Name,
@@ -37,7 +47,12 @@ namespace Tengella.Survey.WebApp.Controllers
                     SurveyFormId = q.SurveyFormId,
                     Text = q.Text,
                     Type = q.Type,
-                    Options = q.Options
+                    Options = q.Options.Select(o => new Option
+                    {
+                        OptionId = o.OptionId,
+                        Text = o.Text,
+                        QuestionId = o.QuestionId
+                    }).ToList()
                 }).ToList()
             };
 
@@ -55,9 +70,9 @@ namespace Tengella.Survey.WebApp.Controllers
             {
                 if (isPreview)
                 {
-                    TempData["SurveyPreview"] = JsonConvert.SerializeObject(survey);
-                    TempData["QuestionsToRemove"] = questionsToRemove;
-                    TempData["OptionsToRemove"] = optionsToRemove;
+                    HttpContext.Session.SetString("SurveyPreview", JsonConvert.SerializeObject(survey));
+                    HttpContext.Session.SetString("QuestionsToRemove", questionsToRemove ?? string.Empty);
+                    HttpContext.Session.SetString("OptionsToRemove", optionsToRemove ?? string.Empty);
                     return RedirectToAction("PreviewSurvey");
                 }
 
@@ -138,20 +153,20 @@ namespace Tengella.Survey.WebApp.Controllers
             {
                 return NotFound();
             }
-                return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Home");
         }
 
         // GET: Survey/PreviewSurvey
         public async Task<IActionResult> PreviewSurvey(int? id)
         {
+            SurveyFormViewModel? survey;
+
             if (id == null)
             {
-                if (TempData["SurveyPreview"] is string surveyJson)
+                if (HttpContext.Session.TryGetValue("SurveyPreview", out byte[]? surveyData))
                 {
-                    var survey = JsonConvert.DeserializeObject<SurveyForm>(surveyJson);
-                    TempData.Keep("SurveyPreview");
-                    TempData.Keep("QuestionsToRemove");
-                    TempData.Keep("OptionsToRemove");
+                    var surveyJson = System.Text.Encoding.UTF8.GetString(surveyData);
+                    survey = JsonConvert.DeserializeObject<SurveyFormViewModel>(surveyJson) ?? new SurveyFormViewModel();
                     return View(survey);
                 }
 
@@ -159,28 +174,36 @@ namespace Tengella.Survey.WebApp.Controllers
             }
             else
             {
-                var survey = await _surveyService.GetSurveyByIdAsync(id.Value);
-                if (survey == null)
+                var surveyEntity = await _surveyService.GetSurveyByIdAsync(id.Value);
+                if (surveyEntity == null)
                 {
                     return NotFound();
                 }
+
+                survey = new SurveyFormViewModel
+                {
+                    SurveyFormId = surveyEntity.SurveyFormId,
+                    Name = surveyEntity.Name,
+                    Type = surveyEntity.Type,
+                    ClosingDate = surveyEntity.ClosingDate,
+                    Questions = surveyEntity.Questions.Select(q => new QuestionViewModel
+                    {
+                        QuestionId = q.QuestionId,
+                        SurveyFormId = q.SurveyFormId,
+                        Text = q.Text,
+                        Type = q.Type,
+                        Options = q.Options.Select(o => new Option
+                        {
+                            OptionId = o.OptionId,
+                            Text = o.Text,
+                            QuestionId = o.QuestionId
+                        }).ToList()
+                    }).ToList()
+                };
+
+                HttpContext.Session.SetString("SurveyPreview", JsonConvert.SerializeObject(survey));
                 return View(survey);
             }
-        }
-
-        // GET: Survey/CreateSurveyFromPreview (for returning to edit mode)
-        public IActionResult CreateSurveyFromPreview()
-        {
-            if (TempData["SurveyPreview"] is string surveyJson)
-            {
-                var survey = JsonConvert.DeserializeObject<SurveyFormViewModel>(surveyJson);
-                TempData.Keep("SurveyPreview");
-                TempData.Keep("QuestionsToRemove");
-                TempData.Keep("OptionsToRemove");
-                return View("CreateSurvey", survey);
-            }
-
-            return RedirectToAction("Index", "Home");
         }
     }
 }

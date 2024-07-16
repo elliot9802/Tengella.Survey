@@ -17,8 +17,6 @@ namespace Tengella.Survey.WebApp.Models
         [Required]
         public DateTime ClosingDate { get; set; }
 
-        public bool IsClosed { get; set; }
-
         public ICollection<QuestionViewModel> Questions { get; set; } = [];
     }
 }
