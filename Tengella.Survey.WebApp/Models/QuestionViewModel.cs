@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Tengella.Survey.Data.Models;
-using Tengella.Survey.WebApp.Validation;
+//using Tengella.Survey.WebApp.Validation;
 
 namespace Tengella.Survey.WebApp.Models
 {
@@ -16,7 +16,6 @@ namespace Tengella.Survey.WebApp.Models
         public string Type { get; set; } = string.Empty;
 
         [Required]
-        [OptionsCountValidation]
         public ICollection<Option> Options { get; set; } = [];
     }
 }
