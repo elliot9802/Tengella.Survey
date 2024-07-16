@@ -1,0 +1,22 @@
+﻿@model Recipient
+
+@{
+    bool isEdit = Model?.RecipientId > 0;
+}
+
+<h1>@(isEdit ? "Edit Recipient" : "Create Recipient")</h1>
+
+<form asp-action="@(isEdit ? "EditRecipient" : "CreateRecipient")" method="post">
+    <div class="form-group">
+        <input asp-for="RecipientId" class="form-control" hidden />
+
+        <label>Email</label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label>Name</label>
+        <input asp-for="Name" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary mt-3">@((isEdit ? "Update" : "Create"))</button>
+</form>

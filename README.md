@@ -95,17 +95,17 @@ EF Core - https://learn.microsoft.com/en-us/ef/core/
 
 ### Survey Distribution
 1. Mock Email Function
-- Create a mock email service to simulate sending survey links. []
-- Design a form to create and manage email templates. []
-- Implement backend logic to store and retrieve email templates. []
-- Ensure email links redirect to the correct survey pages. []
+- Create a email service to send survey links. [X]
+- Design a form to create and manage email templates. [X]
+- Implement backend logic to store and retrieve email templates. [X]
+- Ensure email links redirect to the correct survey pages. [X]
 
 2. Manage Recipient Lists
 - Implement file upload functionality to import email addresses from Excel/CSV. []
-- Create forms to add, remove and view recipients manually. []
-- Validate email addresses and ensure required fields are populated. []
-- Add opt-out links and implement logic to handle opt-outs. []
-- Store recipient lists in the database for reuse. []
+- Create forms to add, remove and view recipients manually. [X]
+- Validate email addresses and ensure required fields are populated. [X]
+- Add opt-out links and implement logic to handle opt-outs. [X]
+- Store recipient lists in the database for reuse. [X]
 
 ### Reporting and Analysis
 1. Display Survey Data
@@ -116,7 +116,7 @@ EF Core - https://learn.microsoft.com/en-us/ef/core/
 2. Graphical Representations and Trends
 - Integrate Chartist (or similar library) for graphical representations. [X]
 - Create charts and graphs to visualize survey data. [X]
-- Implement functionality to compare trends over time for specific questions. []
+- Implement functionality to compare trends over time for specific questions. [X]
 - Add options for different chart types (bar, pie, line). []
 
 ### Documentation and Presentation

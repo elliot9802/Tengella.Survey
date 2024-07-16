@@ -1,0 +1,31 @@
+﻿@model EmailTemplate
+
+@{
+    string defaultBody = $@"
+    <p>Dear {{RecipientName}},</p>
+    <p>Please click the following link to participate in our survey:</p>
+    <p><a href='{{SurveyLink}}'>Survey Link</a></p>
+    <p>If you do not wish to receive further emails, <a href='{{OptOutLink}}'>click here to opt-out</a>.</p>";
+
+    bool isEdit = Model?.EmailTemplateId > 0;
+}
+
+<h1>@(isEdit ? "Edit Email Template" : "Create Email Template")</h1>
+
+<form asp-action="@(isEdit ? "EditEmailTemplate" : "CreateEmailTemplate")" method="post">
+    <input asp-for="EmailTemplateId" class="form-control" hidden />
+    <div class="form-group">
+        <label>Name</label>
+        <input asp-for="Name" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Subject</label>
+        <input asp-for="Subject" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Body</label>
+        <textarea asp-for="Body" class="form-control" rows="10">@Html.Raw(Model?.Body ?? defaultBody)</textarea>
+        <small>You can use {SurveyLink} as a placeholder for the survey link, {RecipientName} for the recipient's name, and {OptOutLink} for the opt-out link.</small>
+    </div>
+    <button type="submit" class="btn btn-primary">@((isEdit ? "Update" : "Create"))</button>
+</form>

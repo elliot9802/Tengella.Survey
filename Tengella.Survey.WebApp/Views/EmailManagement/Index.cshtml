@@ -1,0 +1,136 @@
+﻿@model SendEmailViewModel
+
+@{
+    var errorMessage = TempData["ErrorMessage"] as string;
+    var successMessage = TempData["SuccessMessage"] as string;
+    ViewData["Title"] = "Email Management";
+    var recipients = ViewBag.Recipients as List<RecipientViewModel>;
+    var allRecipients = ViewBag.AllRecipients as List<RecipientViewModel>;
+    var emailTemplates = ViewBag.EmailTemplates as List<EmailTemplateViewModel>;
+    var surveys = ViewBag.Surveys as List<SelectListItem>;
+}
+
+<div class="container mt-4">
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> @errorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> @successMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0"><i class="fas fa-envelope me-2"></i>Send Survey Email</h2>
+                </div>
+                <div class="card-body">
+                    <form id="sendEmailForm" asp-action="SendEmail" method="post">
+                        <div class="mb-3">
+                            <label for="templateId" class="form-label">Email Template</label>
+                            <select asp-for="TemplateId" class="form-control" asp-items="@(new SelectList(emailTemplates ?? new List<EmailTemplateViewModel>(), "EmailTemplateId", "Name"))" required></select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="recipientIds" class="form-label">Recipients</label>
+                            <select asp-for="RecipientIds" class="form-control" multiple asp-items="@(new SelectList(recipients.Select(r => new SelectListItem { Value = r.RecipientId.ToString(), Text = r.Email }), "Value", "Text"))" required></select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="surveyFormId" class="form-label">Survey</label>
+                            <select asp-for="SurveyFormId" class="form-control" asp-items="@(new SelectList(surveys ?? new List<SelectListItem>(), "Value", "Text"))" required></select>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm" title="Send Email(s)" id="sendEmailButton" disabled>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0"><i class="fas fa-users me-2"></i>Recipients</h2>
+                    <a class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#recipientModal" title="Add New Recipient" onclick="loadModal('Recipient')">
+                        <i class="fas fa-plus"></i>
+                    </a>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Name</th>
+                                <th>Opted out</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (allRecipients != null)
+                            {
+                                @foreach (var recipient in allRecipients)
+                                {
+                                    <tr>
+                                        <td>@recipient.Email</td>
+                                        <td>@recipient.Name</td>
+                                        <td>@recipient.OptedOut</td>
+                                        <td class="text-end">
+                                            <a class="btn btn-link p-0 me-2" data-bs-toggle="modal" data-bs-target="#recipientModal" title="Edit Recipient" onclick="loadModal('Recipient', @recipient.RecipientId)">
+                                                <i class="fas fa-edit link-dark"></i>
+                                            </a>
+                                            <a asp-action="DeleteRecipient" asp-route-id="@recipient.RecipientId" class="btn btn-link p-0" title="Delete Recipient">
+                                                <i class="fas fa-trash link-danger"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Modal for creating and editing email templates *@
+    <div class="modal fade" id="emailtemplateModal" tabindex="-1" aria-labelledby="emailtemplateModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="emailtemplateModalLabel">Email Template</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Modal for creating and editing recipients *@
+    <div class="modal fade" id="recipientModal" tabindex="-1" aria-labelledby="recipientModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="recipientModalLabel">Recipient</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/emailManagement.js"></script>
+}
