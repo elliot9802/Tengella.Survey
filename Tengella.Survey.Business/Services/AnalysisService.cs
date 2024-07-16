@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Tengella.Survey.Business.DTOs;
+using Tengella.Survey.Business.DTOs.Analysis;
 using Tengella.Survey.Business.Interfaces;
 using Tengella.Survey.Data;
-using Tengella.Survey.Data.Models;
 
 namespace Tengella.Survey.Business.Services
 {

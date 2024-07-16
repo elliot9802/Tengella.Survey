@@ -1,4 +1,6 @@
-﻿namespace Tengella.Survey.Data.Models
+﻿using Tengella.Survey.Data.Models;
+
+namespace Tengella.Survey.Business.DTOs.Analysis
 {
     public class SurveyAnalysis
     {

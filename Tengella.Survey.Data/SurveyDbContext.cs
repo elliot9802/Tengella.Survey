@@ -12,9 +12,6 @@ public class SurveyDbContext(DbContextOptions<SurveyDbContext> options) : DbCont
     public DbSet<EmailTemplate> EmailTemplates { get; set; }
     public DbSet<Recipient> Recipients { get; set; }
     public DbSet<DistributionList> DistributionLists { get; set; }
-    public DbSet<SurveyAnalysis> SurveyAnalyses { get; set; }
-    public DbSet<QuestionAnalysis> QuestionAnalyses { get; set; }
-    public DbSet<OptionAnalysis> OptionAnalyses { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -51,34 +48,6 @@ public class SurveyDbContext(DbContextOptions<SurveyDbContext> options) : DbCont
             .HasOne(r => r.Option)
             .WithMany()
             .HasForeignKey(r => r.OptionId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // SurveyAnalysis to QuestionAnalysis relationship
-        modelBuilder.Entity<SurveyAnalysis>()
-            .HasMany(sa => sa.QuestionAnalyses)
-            .WithOne(qa => qa.SurveyAnalysis)
-            .HasForeignKey(qa => qa.SurveyAnalysisId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // QuestionAnalysis to OptionAnalysis relationship
-        modelBuilder.Entity<QuestionAnalysis>()
-            .HasMany(qa => qa.OptionAnalyses)
-            .WithOne(oa => oa.QuestionAnalysis)
-            .HasForeignKey(oa => oa.QuestionAnalysisId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // QuestionAnalysis to Question relationship
-        modelBuilder.Entity<QuestionAnalysis>()
-            .HasOne(qa => qa.Question)
-            .WithMany()
-            .HasForeignKey(qa => qa.QuestionId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // OptionAnalysis to Option relationship
-        modelBuilder.Entity<OptionAnalysis>()
-            .HasOne(oa => oa.Option)
-            .WithMany()
-            .HasForeignKey(oa => oa.OptionId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -1,5 +1,5 @@
 ﻿using Tengella.Survey.Business.DTOs;
-using Tengella.Survey.Data.Models;
+using Tengella.Survey.Business.DTOs.Analysis;
 
 namespace Tengella.Survey.Business.Interfaces
 {
