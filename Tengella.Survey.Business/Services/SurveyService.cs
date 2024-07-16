@@ -117,5 +117,23 @@ namespace Tengella.Survey.Business.Services
             await _context.SaveChangesAsync();
             return newSurvey;
         }
+
+        public async Task<int> GetTotalResponsesAsync(int surveyFormId)
+        {
+            var survey = await _context.SurveyForms
+                .Include(s => s.Questions)
+                .ThenInclude(q => q.Responses)
+                .FirstOrDefaultAsync(s => s.SurveyFormId == surveyFormId);
+
+            if (survey == null)
+            {
+                throw new InvalidOperationException("Survey not found.");
+            }
+
+            return survey.Questions
+                .SelectMany(q => q.Responses)
+                .GroupBy(r => r.ResponseGroupId)
+                .Count();
+        }
     }
 }

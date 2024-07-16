@@ -122,17 +122,28 @@ namespace Tengella.Survey.WebApp.Controllers
                 return NotFound();
             }
 
+            var responsesCount = await _surveyService.GetTotalResponsesAsync(id);
+            var questionsCount = survey.Questions.Count;
+
             var model = new DeleteViewModel
             {
                 Title = "Delete Survey",
-                EntityName = survey.Name,
-                Properties = new Dictionary<string, string>
-                {
-                    { "SurveyFormId", survey.SurveyFormId.ToString() },
-                    { "Name", survey.Name }
-                },
                 DeleteAction = nameof(DeleteSurveyConfirmed),
-                ReturnController = "Survey"
+                ReturnController = "Home",
+                MultipleProperties =
+                [
+                    new() {
+                        { "Name", survey.Name },
+                        { "ResponsesCount", responsesCount.ToString() + " Responses" },
+                        { "QuestionsCount", questionsCount.ToString()+ " Questions" }
+                    }
+                ],
+                PropertyIcons = new Dictionary<string, string>
+                {
+                    { "Name", "fas fa-file-alt" },
+                    { "ResponsesCount", "fas fa-poll" },
+                    { "QuestionsCount", "fas fa-question-circle" }
+                }
             };
 
             return View("Delete", model);
@@ -165,7 +176,7 @@ namespace Tengella.Survey.WebApp.Controllers
             {
                 if (HttpContext.Session.TryGetValue("SurveyPreview", out byte[]? surveyData))
                 {
-                    var surveyJson = System.Text.Encoding.UTF8.GetString(surveyData);
+                    var surveyJson = Encoding.UTF8.GetString(surveyData);
                     survey = JsonConvert.DeserializeObject<SurveyFormViewModel>(surveyJson) ?? new SurveyFormViewModel();
                     return View(survey);
                 }

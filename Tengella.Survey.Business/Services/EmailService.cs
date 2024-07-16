@@ -76,7 +76,7 @@ namespace Tengella.Survey.Business.Services
 
             foreach (var recipient in recipients)
             {
-                var optOutLink = $"{baseUrl}/Recipient/OptOut?email={recipient.Email}";
+                var optOutLink = $"{baseUrl}/EmailManagement/OptOut?email={recipient.Email}";
 
                 var emailSent = await SendSurveyEmailAsync(templateId, recipient, surveyLink, optOutLink);
                 if (!emailSent)

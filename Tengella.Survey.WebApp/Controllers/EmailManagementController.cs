@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
 using Tengella.Survey.Business.Interfaces;
 using Tengella.Survey.Data;
 using Tengella.Survey.Data.Models;
@@ -114,40 +116,143 @@ namespace Tengella.Survey.WebApp.Controllers
             return PartialView("_CreateRecipient", recipient);
         }
 
-        public async Task<IActionResult> DeleteRecipient(int id)
+        [HttpGet]
+        public IActionResult GetDeleteViewModel(string entityType, int entityId)
         {
-            var recipient = await _context.Recipients.FindAsync(id);
-            if (recipient == null)
+            DeleteViewModel model = new DeleteViewModel();
+            switch (entityType)
+            {
+                case "Recipient":
+                    var recipient = _context.Recipients.Find(entityId);
+                    if (recipient == null) return NotFound();
+                    model = new DeleteViewModel
+                    {
+                        Title = "Delete Recipient",
+                        DeleteAction = nameof(DeleteRecipientsConfirmed),
+                        ReturnController = "EmailManagement",
+                        MultipleProperties = new List<Dictionary<string, string>>
+                {
+                    new Dictionary<string, string>
+                    {
+                        { "Email", recipient.Email },
+                        { "Name", recipient.Name }
+                    }
+                },
+                        PropertyIcons = new Dictionary<string, string>
+                {
+                    { "Email", "fas fa-envelope" },
+                    { "Name", "fas fa-user" }
+                }
+                    };
+                    break;
+
+                case "EmailTemplate":
+                    var template = _context.EmailTemplates.Find(entityId);
+                    if (template == null) return NotFound();
+                    model = new DeleteViewModel
+                    {
+                        Title = "Delete Email Template",
+                        DeleteAction = nameof(DeleteEmailTemplateConfirmed),
+                        ReturnController = "EmailManagement",
+                        MultipleProperties = new List<Dictionary<string, string>>
+                {
+                    new Dictionary<string, string>
+                    {
+                        { "Name", template.Name },
+                        { "Subject", template.Subject }
+                    }
+                },
+                        PropertyIcons = new Dictionary<string, string>
+                {
+                    { "Name", "fas fa-file-alt" },
+                    { "Subject", "fas fa-envelope-open-text" }
+                }
+                    };
+                    break;
+            }
+            return PartialView("_DeleteConfirmationModal", model);
+        }
+
+        public async Task<IActionResult> DeleteRecipients(List<int> ids)
+        {
+            var recipients = await _context.Recipients.Where(r => ids.Contains(r.RecipientId)).ToListAsync();
+            if (recipients.Count == 0)
             {
                 return NotFound();
             }
 
             var model = new DeleteViewModel
             {
-                Title = "Delete Recipient",
-                EntityName = recipient.Email,
-                Properties = new Dictionary<string, string>
+                Title = "Delete Recipients",
+                DeleteAction = nameof(DeleteRecipientsConfirmed),
+                ReturnController = "EmailManagement",
+                MultipleProperties = recipients.ConvertAll(r => new Dictionary<string, string>
                 {
-                    { "RecipientId", recipient.RecipientId.ToString() },
-                    { "Email", recipient.Email },
-                    { "Name", recipient.Name }
-                },
-                DeleteAction = nameof(DeleteRecipientConfirmed),
-                ReturnController = "EmailManagement"
+                    { "Email", r.Email },
+                    { "Name", r.Name }
+                }),
+                PropertyIcons = new Dictionary<string, string>
+                {
+                    { "Email", "fas fa-envelope" },
+                    { "Name", "fas fa-user" }
+                }
             };
 
             return View("Delete", model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> DeleteRecipientConfirmed(int recipientId)
+        public async Task<IActionResult> DeleteRecipientsConfirmed(List<int> RecipientId)
         {
-            var recipient = await _context.Recipients.FindAsync(recipientId);
-            if (recipient != null)
+            var recipients = await _context.Recipients.Where(r => RecipientId.Contains(r.RecipientId)).ToListAsync();
+            if (recipients.Count != 0)
             {
-                _context.Recipients.Remove(recipient);
+                _context.Recipients.RemoveRange(recipients);
                 await _context.SaveChangesAsync();
             }
+            return RedirectToAction(nameof(Index), new { activeTab = "manage-recipients" });
+        }
+
+        public IActionResult UploadRecipients()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadRecipients(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                ModelState.AddModelError(string.Empty, "Please select a valid file.");
+                return View();
+            }
+
+            var recipients = new List<Recipient>();
+
+            await using (var stream = new MemoryStream())
+            {
+                await file.CopyToAsync(stream);
+                stream.Position = 0;
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+                using var package = new ExcelPackage(stream);
+                var worksheet = package.Workbook.Worksheets.First();
+                var rowCount = worksheet.Dimension.Rows;
+
+                for (int row = 2; row <= rowCount; row++)
+                {
+                    var recipient = new Recipient
+                    {
+                        Email = worksheet.Cells[row, 1].Value?.ToString() ?? string.Empty,
+                        Name = worksheet.Cells[row, 2].Value?.ToString() ?? string.Empty,
+                        OptedOut = false
+                    };
+                    recipients.Add(recipient);
+                }
+            }
+
+            _context.Recipients.AddRange(recipients);
+            await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -190,10 +295,10 @@ namespace Tengella.Survey.WebApp.Controllers
             return PartialView("_CreateEmailTemplate", emailTemplate);
         }
 
-        public async Task<IActionResult> DeleteEmailTemplate(int id)
+        public async Task<IActionResult> DeleteEmailTemplates(List<int> ids)
         {
-            var emailTemplate = await _context.EmailTemplates.FindAsync(id);
-            if (emailTemplate == null)
+            var emailTemplates = await _context.EmailTemplates.Where(et => ids.Contains(et.EmailTemplateId)).ToListAsync();
+            if (emailTemplates.Count == 0)
             {
                 return NotFound();
             }
@@ -201,30 +306,42 @@ namespace Tengella.Survey.WebApp.Controllers
             var model = new DeleteViewModel
             {
                 Title = "Delete Email Template",
-                EntityName = emailTemplate.Name,
-                Properties = new Dictionary<string, string>
-                {
-                    { "EmailTemplateId", emailTemplate.EmailTemplateId.ToString() },
-                    { "Name", emailTemplate.Name },
-                    { "Subject", emailTemplate.Subject }
-                },
                 DeleteAction = nameof(DeleteEmailTemplateConfirmed),
-                ReturnController = "EmailManagement"
+                ReturnController = "EmailManagement",
+                MultipleProperties = emailTemplates.ConvertAll(et => new Dictionary<string, string>
+                {
+                    { "EmailTemplateId", et.EmailTemplateId.ToString() },
+                    { "Subject", et.Subject },
+                    { "Name", et.Name }
+                })
             };
 
             return View("Delete", model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> DeleteEmailTemplateConfirmed(int emailTemplateId)
+        public async Task<IActionResult> DeleteEmailTemplateConfirmed(List<int> EmailTemplateId)
         {
-            var emailTemplate = await _context.EmailTemplates.FindAsync(emailTemplateId);
-            if (emailTemplate != null)
+            var emailTemplate = await _context.EmailTemplates.Where(et => EmailTemplateId.Contains(et.EmailTemplateId)).ToListAsync();
+            if (emailTemplate.Count != 0)
             {
-                _context.EmailTemplates.Remove(emailTemplate);
+                _context.EmailTemplates.RemoveRange(emailTemplate);
                 await _context.SaveChangesAsync();
             }
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new { activeTab = "manage-templates" });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> OptOut(string email)
+        {
+            var recipient = await _context.Recipients.FirstOrDefaultAsync(r => r.Email == email);
+            if (recipient == null)
+            {
+                return NotFound();
+            }
+            recipient.OptedOut = true;
+            await _context.SaveChangesAsync();
+            return Content("You have successfully opted out.");
         }
     }
 }

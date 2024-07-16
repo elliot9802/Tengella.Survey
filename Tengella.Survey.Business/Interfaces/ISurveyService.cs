@@ -10,5 +10,6 @@ namespace Tengella.Survey.Business.Interfaces
         Task UpdateSurveyAsync(SurveyForm survey, List<int> questionsToRemove, List<int> optionsToRemove);
         Task DeleteSurveyAsync(int id);
         Task<SurveyForm?> CopySurveyAsync(int id);
+        Task<int> GetTotalResponsesAsync(int surveyFormId);
     }
 }

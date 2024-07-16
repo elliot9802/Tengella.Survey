@@ -31,78 +31,140 @@
         <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h2 class="mb-0"><i class="fas fa-envelope me-2"></i>Send Survey Email</h2>
+                    <h2 class="mb-0"><i class="fas fa-envelope me-2"></i>Email Management</h2>
                 </div>
                 <div class="card-body">
-                    <form id="sendEmailForm" asp-action="SendEmail" method="post">
-                        <div class="mb-3">
-                            <label for="templateId" class="form-label">Email Template</label>
-                            <select asp-for="TemplateId" class="form-control" asp-items="@(new SelectList(emailTemplates ?? new List<EmailTemplateViewModel>(), "EmailTemplateId", "Name"))" required></select>
+                    <ul class="nav nav-tabs" id="emailManagementTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="send-email-tab" data-bs-toggle="tab" data-bs-target="#send-email" type="button" role="tab" aria-controls="send-email" aria-selected="true">Send Email</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="manage-recipients-tab" data-bs-toggle="tab" data-bs-target="#manage-recipients" type="button" role="tab" aria-controls="manage-recipients" aria-selected="false">Manage Recipients</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="manage-templates-tab" data-bs-toggle="tab" data-bs-target="#manage-templates" type="button" role="tab" aria-controls="manage-templates" aria-selected="false">Manage Templates</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="emailManagementTabsContent">
+                        <div class="tab-pane fade show active" id="send-email" role="tabpanel" aria-labelledby="send-email-tab">
+                            <form id="sendEmailForm" asp-action="SendEmail" method="post" class="mt-3">
+                                <div class="mb-3">
+                                    <label for="templateId" class="form-label">Email Template</label>
+                                    <select asp-for="TemplateId" class="form-control" asp-items="@(new SelectList(emailTemplates ?? new List<EmailTemplateViewModel>(), "EmailTemplateId", "Name"))" required></select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="recipientIds" class="form-label">Recipients</label>
+                                    <select asp-for="RecipientIds" class="form-control" multiple asp-items="@(new SelectList(recipients.Select(r => new SelectListItem { Value = r.RecipientId.ToString(), Text = r.Email }), "Value", "Text"))" required></select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="surveyFormId" class="form-label">Survey</label>
+                                    <select asp-for="SurveyFormId" class="form-control" asp-items="@(new SelectList(surveys ?? new List<SelectListItem>(), "Value", "Text"))" required></select>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm" title="Send Email(s)" id="sendEmailButton" disabled>
+                                    <i class="fas fa-paper-plane"></i> Send Email
+                                </button>
+                            </form>
                         </div>
-                        <div class="mb-3">
-                            <label for="recipientIds" class="form-label">Recipients</label>
-                            <select asp-for="RecipientIds" class="form-control" multiple asp-items="@(new SelectList(recipients.Select(r => new SelectListItem { Value = r.RecipientId.ToString(), Text = r.Email }), "Value", "Text"))" required></select>
+                        <div class="tab-pane fade" id="manage-recipients" role="tabpanel" aria-labelledby="manage-recipients-tab">
+                            <div class="mt-3">
+                                <form asp-action="UploadRecipients" method="post" enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <label for="file" class="form-label">
+                                            Upload Recipients CSV/Excel
+                                            <i class="fas fa-info-circle text-muted" title="Upload a CSV or Excel file with columns: Email, Name"></i>
+                                        </label>
+                                        <input type="file" name="file" class="form-control" required />
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Upload</button>
+                                </form>
+                                <div class="mt-4">
+                                    <button class="btn btn-danger btn-sm mb-3" id="deleteSelectedRecipients" disabled>
+                                        <i class="fas fa-trash"></i> Delete Selected
+                                    </button>
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th><input type="checkbox" id="selectAllRecipients" /></th>
+                                                <th>Email</th>
+                                                <th>Name</th>
+                                                <th>Opted out</th>
+                                                <th class="text-end">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (allRecipients != null)
+                                            {
+                                                @foreach (var recipient in allRecipients)
+                                                {
+                                                    <tr>
+                                                        <td><input type="checkbox" class="select-recipient" data-id="@recipient.RecipientId" /></td>
+                                                        <td>@recipient.Email</td>
+                                                        <td>@recipient.Name</td>
+                                                        <td>@recipient.OptedOut</td>
+                                                        <td class="text-end">
+                                                            <a class="btn btn-link p-0 me-2" data-bs-toggle="modal" data-bs-target="#recipientModal" title="Edit Recipient" onclick="loadModal('Recipient', @recipient.RecipientId)">
+                                                                <i class="fas fa-edit link-dark"></i>
+                                                            </a>
+                                                            <button class="btn btn-link p-0" title="Delete Recipient" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal" onclick="loadDeleteModal('Recipient', @recipient.RecipientId)">
+                                                                <i class="fas fa-trash link-danger"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="surveyFormId" class="form-label">Survey</label>
-                            <select asp-for="SurveyFormId" class="form-control" asp-items="@(new SelectList(surveys ?? new List<SelectListItem>(), "Value", "Text"))" required></select>
+                        <div class="tab-pane fade" id="manage-templates" role="tabpanel" aria-labelledby="manage-templates-tab">
+                            <div class="mt-3">
+                                <button class="btn btn-primary btn-sm mb-3" data-bs-toggle="modal" data-bs-target="#emailtemplateModal" title="Create New Template" onclick="loadModal('EmailTemplate')">
+                                    <i class="fas fa-plus"></i> Create New Template
+                                </button>
+                                <button class="btn btn-danger btn-sm mb-3" id="deleteSelectedTemplates" disabled>
+                                    <i class="fas fa-trash"></i> Delete Selected
+                                </button>
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th><input type="checkbox" id="selectAllTemplates" /></th>
+                                            <th>Name</th>
+                                            <th>Subject</th>
+                                            <th class="text-end">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (emailTemplates != null)
+                                        {
+                                            @foreach (var template in emailTemplates)
+                                            {
+                                                <tr>
+                                                    <td><input type="checkbox" class="select-template" data-id="@template.EmailTemplateId" /></td>
+                                                    <td>@template.Name</td>
+                                                    <td>@template.Subject</td>
+                                                    <td class="text-end">
+                                                        <a class="btn btn-link p-0 me-2" data-bs-toggle="modal" data-bs-target="#emailtemplateModal" title="Edit Template" onclick="loadModal('EmailTemplate', @template.EmailTemplateId)">
+                                                            <i class="fas fa-edit link-dark"></i>
+                                                        </a>
+                                                        <button class="btn btn-link p-0" title="Delete Template" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal" onclick="loadDeleteModal('EmailTemplate', @template.EmailTemplateId)">
+                                                            <i class="fas fa-trash link-danger"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-sm" title="Send Email(s)" id="sendEmailButton" disabled>
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h2 class="mb-0"><i class="fas fa-users me-2"></i>Recipients</h2>
-                    <a class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#recipientModal" title="Add New Recipient" onclick="loadModal('Recipient')">
-                        <i class="fas fa-plus"></i>
-                    </a>
-                </div>
-                <div class="card-body">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>Email</th>
-                                <th>Name</th>
-                                <th>Opted out</th>
-                                <th class="text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (allRecipients != null)
-                            {
-                                @foreach (var recipient in allRecipients)
-                                {
-                                    <tr>
-                                        <td>@recipient.Email</td>
-                                        <td>@recipient.Name</td>
-                                        <td>@recipient.OptedOut</td>
-                                        <td class="text-end">
-                                            <a class="btn btn-link p-0 me-2" data-bs-toggle="modal" data-bs-target="#recipientModal" title="Edit Recipient" onclick="loadModal('Recipient', @recipient.RecipientId)">
-                                                <i class="fas fa-edit link-dark"></i>
-                                            </a>
-                                            <a asp-action="DeleteRecipient" asp-route-id="@recipient.RecipientId" class="btn btn-link p-0" title="Delete Recipient">
-                                                <i class="fas fa-trash link-danger"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    @* Modal for creating and editing email templates *@
+    <!-- Modal for creating and editing email templates -->
     <div class="modal fade" id="emailtemplateModal" tabindex="-1" aria-labelledby="emailtemplateModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -110,13 +172,12 @@
                     <h5 class="modal-title" id="emailtemplateModalLabel">Email Template</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                </div>
+                <div class="modal-body"></div>
             </div>
         </div>
     </div>
 
-    @* Modal for creating and editing recipients *@
+    <!-- Modal for creating and editing recipients -->
     <div class="modal fade" id="recipientModal" tabindex="-1" aria-labelledby="recipientModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -124,13 +185,22 @@
                     <h5 class="modal-title" id="recipientModalLabel">Recipient</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                </div>
+                <div class="modal-body"></div>
             </div>
         </div>
     </div>
+
+    @Html.PartialAsync("_DeleteConfirmationModal")
 </div>
 
 @section Scripts {
     <script src="~/js/emailManagement.js"></script>
+    <script>
+        function loadDeleteModal(entityType, entityId) {
+            $.get('/EmailManagement/GetDeleteViewModel', { entityType: entityType, entityId: entityId }, function (data) {
+                $('#deleteConfirmationModal .modal-content').html(data);
+                $('#deleteConfirmationModal').modal('show');
+            });
+        }
+    </script>
 }
