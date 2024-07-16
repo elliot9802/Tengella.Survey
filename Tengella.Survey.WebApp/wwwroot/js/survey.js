@@ -102,7 +102,7 @@ $(function () {
                             </select>
                         </div>
                         <div class="options-container mt-3"></div>
-                        <button type="button" class="btn btn-link add-option-btn mt-3" data-question-index="${questionCount}">Add Option</button>
+                        <button type="button" class="btn btn-link add-option-btn mt-3" data-question-index="${questionCount}" style="display:none;">Add Option</button>
                     </div>
                 </div>
             </div>
@@ -117,8 +117,29 @@ $(function () {
         $('.remove-question-btn').off('click').on('click', handleRemoveQuestionClick);
         $('.question-type').off('change').on('change', handleQuestionTypeChange);
         $('.remove-option-btn').off('click').on('click', handleRemoveOptionClick);
-    }
+        $('.card-body .card-title').off('click').on('click', function () {
+            const card = $(this).closest('.question-card');
+            const questionContent = card.find('.question-content');
 
+            if (questionContent.is(':visible')) {
+                questionContent.slideUp();
+            } else {
+                minimizeAllExcept(card);
+                questionContent.slideDown();
+            }
+        });
+
+        $('.question-type').each(function () {
+            const questionIndex = $(this).data('question-index');
+            const addOptionBtn = $(`.add-option-btn[data-question-index="${questionIndex}"]`);
+            const questionType = $(this).val();
+            if (questionType === "Radio") {
+                addOptionBtn.show();
+            } else {
+                addOptionBtn.hide();
+            }
+        });
+    }
 
     function handleAddOptionClick(event) {
         const questionIndex = $(event.target).data('question-index');
@@ -197,7 +218,6 @@ $(function () {
         });
         validateOptionsCount();
     }
-
 
     function handleQuestionTypeChange(event) {
         const questionIndex = $(event.target).data('question-index');

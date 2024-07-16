@@ -5,8 +5,14 @@
 function updateEventListeners() {
     $('.card-body .card-title').off('click').on('click', function () {
         const card = $(this).closest('.question-card');
-        minimizeAllExcept(card);
-        card.find('.question-content').slideDown();
+        const questionContent = card.find('.question-content');
+
+        if (questionContent.is(':visible')) {
+            questionContent.slideUp();
+        } else {
+            minimizeAllExcept(card);
+            questionContent.slideDown();
+        }
     });
 }
 
