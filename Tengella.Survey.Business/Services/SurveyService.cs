@@ -32,6 +32,7 @@ namespace Tengella.Survey.Business.Services
         {
             _context.SurveyForms.Add(survey);
             await _context.SaveChangesAsync();
+            await LogEntityCounts(survey.Questions, "RepeatedQuestion");
         }
 
         public async Task UpdateSurveyAsync(SurveyForm survey, List<int> questionsToRemove, List<int> optionsToRemove)
@@ -67,6 +68,7 @@ namespace Tengella.Survey.Business.Services
                 var question = await _context.Questions.FindAsync(questionId);
                 if (question != null)
                 {
+                    await LogEntityCountChange(question, "RepeatedQuestion", -1);
                     _context.Questions.Remove(question);
                 }
             }
@@ -81,13 +83,23 @@ namespace Tengella.Survey.Business.Services
             }
 
             await _context.SaveChangesAsync();
+            await LogEntityCounts(survey.Questions, "RepeatedQuestion");
         }
 
         public async Task DeleteSurveyAsync(int id)
         {
-            var survey = await _context.SurveyForms.FindAsync(id);
+            var survey = await _context.SurveyForms
+                .Include(s => s.Questions)
+                .FirstOrDefaultAsync(s => s.SurveyFormId == id);
+
             if (survey != null)
             {
+                foreach (var question in survey.Questions)
+                {
+                    await LogEntityCountChange(question, "RepeatedQuestion", -1);
+                }
+                await LogEntityCountChange(survey, "SurveyEmailSent", -1);
+
                 _context.SurveyForms.Remove(survey);
                 await _context.SaveChangesAsync();
             }
@@ -115,6 +127,7 @@ namespace Tengella.Survey.Business.Services
 
             _context.SurveyForms.Add(newSurvey);
             await _context.SaveChangesAsync();
+            await LogEntityCounts(newSurvey.Questions, "RepeatedQuestion");
             return newSurvey;
         }
 
@@ -125,15 +138,65 @@ namespace Tengella.Survey.Business.Services
                 .ThenInclude(q => q.Responses)
                 .FirstOrDefaultAsync(s => s.SurveyFormId == surveyFormId);
 
-            if (survey == null)
-            {
-                throw new InvalidOperationException("Survey not found.");
-            }
-
-            return survey.Questions
+            return survey == null
+                ? throw new InvalidOperationException("Survey not found.")
+                : survey.Questions
                 .SelectMany(q => q.Responses)
                 .GroupBy(r => r.ResponseGroupId)
                 .Count();
+        }
+
+        private async Task LogEntityCounts<T>(IEnumerable<T> entities, string logType) where T : class
+        {
+            foreach (var entity in entities)
+            {
+                await LogEntityCountChange(entity, logType, 1);
+            }
+        }
+
+        private async Task LogEntityCountChange<T>(T entity, string logType, int countChange) where T : class
+        {
+            if (entity == null) return;
+
+            var entityName = entity.GetType().GetProperty("Text")?.GetValue(entity)?.ToString();
+            var entityId = (int?)entity.GetType().GetProperty("QuestionId")?.GetValue(entity);
+
+            if (string.IsNullOrEmpty(entityName) || entityId == null) return;
+
+            var log = await _context.AnalysisLogs
+                .FirstOrDefaultAsync(l => l.EntityName == entityName && l.LogType == logType);
+
+            if (log == null)
+            {
+                if (countChange > 0)
+                {
+                    log = new AnalysisLog
+                    {
+                        LogType = logType,
+                        EntityId = entityId.Value,
+                        EntityName = entityName,
+                        Count = countChange,
+                        LastUpdated = DateTime.UtcNow
+                    };
+                    _context.AnalysisLogs.Add(log);
+                }
+            }
+            else
+            {
+                log.Count += countChange;
+                log.LastUpdated = DateTime.UtcNow;
+
+                if (log.Count <= 0)
+                {
+                    _context.AnalysisLogs.Remove(log);
+                }
+                else
+                {
+                    _context.AnalysisLogs.Update(log);
+                }
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 }

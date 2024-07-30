@@ -11,7 +11,7 @@ public class SurveyDbContext(DbContextOptions<SurveyDbContext> options) : DbCont
     public DbSet<Response> Responses { get; set; }
     public DbSet<EmailTemplate> EmailTemplates { get; set; }
     public DbSet<Recipient> Recipients { get; set; }
-    public DbSet<DistributionList> DistributionLists { get; set; }
+    public DbSet<AnalysisLog> AnalysisLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

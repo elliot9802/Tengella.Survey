@@ -91,11 +91,57 @@
                         </a>
                         <a href="@Url.Action("PreviewSurvey", "Survey", new { id = survey.SurveyFormId })" title="Preview Survey" class="btn btn-link"><i class="fas fa-eye"></i></a>
                         <a href="@Url.Action("CreateSurvey", "Survey", new { id = survey.SurveyFormId })" title="Edit Survey" class="btn btn-link"><i class="fas fa-edit"></i></a>
-                        <a href="@Url.Action("DeleteSurvey", "Survey", new { id = survey.SurveyFormId })" title="Delete Survey" class="btn btn-link"><i class="fas fa-trash-alt"></i></a>
+                        <a href="javascript:void(0);" title="Delete Survey" class="btn btn-link delete-survey" data-survey-id="@survey.SurveyFormId"><i class="fas fa-trash-alt"></i></a>
                         <a href="@Url.Action("CopySurvey", "Survey", new { id = survey.SurveyFormId })" title="Copy Survey" class="btn btn-link"><i class="fas fa-copy"></i></a>
                     </div>
                 </div>
             </div>
         }
     </div>
+
+    <!-- Modal for delete confirmation -->
+    <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete the selected items?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteButton">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            let surveyIdToDelete = 0;
+
+            $('.delete-survey').on('click', function () {
+                surveyIdToDelete = $(this).data('survey-id');
+                $('#deleteConfirmationModal').modal('show');
+            });
+
+            $('#confirmDeleteButton').on('click', function () {
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("DeleteSurvey", "Survey")',
+                    data: { id: surveyIdToDelete },
+                    success: function () {
+                        window.location.reload();
+                    },
+                    error: function () {
+                        alert('Error deleting survey.');
+                    }
+                });
+            });
+        });
+    </script>
+}

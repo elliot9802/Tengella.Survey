@@ -3,12 +3,21 @@ using Tengella.Survey.Business.DTOs;
 using Tengella.Survey.Business.DTOs.Analysis;
 using Tengella.Survey.Business.Interfaces;
 using Tengella.Survey.Data;
+using Tengella.Survey.Data.Models;
 
 namespace Tengella.Survey.Business.Services
 {
     public class AnalysisService(SurveyDbContext context) : IAnalysisService
     {
         private readonly SurveyDbContext _context = context;
+
+        public async Task<List<AnalysisLog>> GetLogsByTypeAsync(string logType)
+        {
+            return await _context.AnalysisLogs
+                .Where(log => log.LogType == logType)
+                .OrderByDescending(log => log.Count)
+                .ToListAsync();
+        }
 
         public async Task<SurveyAnalysis> AnalyzeSurveyAsync(int surveyFormId)
         {
@@ -71,6 +80,9 @@ namespace Tengella.Survey.Business.Services
                     .ThenInclude(q => q.Responses)
                 .ToListAsync();
 
+            var activeSurveys = surveys.Where(s => s.ClosingDate >= DateTime.Today).ToList();
+            var closedSurveys = surveys.Where(s => s.ClosingDate < DateTime.Today).ToList();
+
             var surveySummaries = surveys.ConvertAll(s => new SurveySummaryItem
             {
                 SurveyFormId = s.SurveyFormId,
@@ -84,7 +96,20 @@ namespace Tengella.Survey.Business.Services
                                             .Count()
             });
 
-            return new SurveySummary { Surveys = surveySummaries };
+            var closedSurveySummaries = closedSurveys.ConvertAll(s => new SurveySummaryItem
+            {
+                SurveyFormId = s.SurveyFormId,
+                Name = s.Name,
+                Type = s.Type,
+                ClosingDate = s.ClosingDate,
+                TotalResponses = s.Questions.Sum(q => q.Responses.Count),
+                TotalTimesTaken = s.Questions.SelectMany(q => q.Responses)
+                                        .GroupBy(r => r.ResponseGroupId)
+                                        .Distinct()
+                                        .Count()
+            });
+
+            return new SurveySummary { Surveys = surveySummaries, ClosedSurveys = closedSurveySummaries };
         }
 
         public async Task<QuestionTrendAnalysis> GetQuestionTrendAnalysisAsync(int questionId)

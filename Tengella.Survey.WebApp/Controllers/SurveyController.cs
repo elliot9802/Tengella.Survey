@@ -114,45 +114,10 @@ namespace Tengella.Survey.WebApp.Controllers
         }
 
         // GET: Survey/DeleteSurvey/5
+        [HttpPost]
         public async Task<IActionResult> DeleteSurvey(int id)
         {
-            var survey = await _surveyService.GetSurveyByIdAsync(id);
-            if (survey == null)
-            {
-                return NotFound();
-            }
-
-            var responsesCount = await _surveyService.GetTotalResponsesAsync(id);
-            var questionsCount = survey.Questions.Count;
-
-            var model = new DeleteViewModel
-            {
-                Title = "Delete Survey",
-                DeleteAction = nameof(DeleteSurveyConfirmed),
-                ReturnController = "Home",
-                MultipleProperties =
-                [
-                    new() {
-                        { "Name", survey.Name },
-                        { "ResponsesCount", responsesCount.ToString() + " Responses" },
-                        { "QuestionsCount", questionsCount.ToString()+ " Questions" }
-                    }
-                ],
-                PropertyIcons = new Dictionary<string, string>
-                {
-                    { "Name", "fas fa-file-alt" },
-                    { "ResponsesCount", "fas fa-poll" },
-                    { "QuestionsCount", "fas fa-question-circle" }
-                }
-            };
-
-            return View("Delete", model);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> DeleteSurveyConfirmed(int surveyFormId)
-        {
-            await _surveyService.DeleteSurveyAsync(surveyFormId);
+            await _surveyService.DeleteSurveyAsync(id);
             return RedirectToAction(nameof(Index), "Home");
         }
 

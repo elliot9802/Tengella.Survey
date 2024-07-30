@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Tengella.Survey.Business.Interfaces;
+using Tengella.Survey.WebApp.Models;
 
 namespace Tengella.Survey.WebApp.Controllers
 {
@@ -20,7 +21,7 @@ namespace Tengella.Survey.WebApp.Controllers
             if (survey.ClosingDate < DateTime.Today)
             {
                 TempData["ErrorMessage"] = "This survey is closed and cannot be responded to.";
-                return RedirectToAction("Index", "Home");
+                return View("Error", new ErrorViewModel());
             }
             return View(survey);
         }
@@ -38,7 +39,7 @@ namespace Tengella.Survey.WebApp.Controllers
             if (!responses.Any())
             {
                 TempData["ErrorMessage"] = "This survey is closed and cannot be responded to.";
-                return RedirectToAction("Index", "Home");
+                return View("Error", new ErrorViewModel());
             }
             _logger.LogInformation("Responses: {Response}", responses.ToString());
             await _responseService.SaveResponsesAsync(responses);

@@ -15,7 +15,7 @@ namespace Tengella.Survey.WebApp.Models
         public string Type { get; set; } = string.Empty;
 
         [Required]
-        public DateTime ClosingDate { get; set; }
+        public DateTime ClosingDate { get; set; } = DateTime.Today;
 
         public ICollection<QuestionViewModel> Questions { get; set; } = [];
     }

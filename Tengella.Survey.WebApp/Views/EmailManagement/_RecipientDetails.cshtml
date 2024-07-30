@@ -1,0 +1,25 @@
+﻿@model RecipientViewModel
+
+<div class="row">
+    <div class="col-md-12">
+        <p><strong>Email:</strong> @Model.Email</p>
+        <p><strong>Namn:</strong> @Model.Name</p>
+        <p><strong>Typ:</strong> @Model.Type</p>
+        @if (!string.IsNullOrEmpty(Model.PersonNmr))
+        {
+            <p><strong>Personnummer:</strong> @Model.PersonNmr</p>
+        }
+        @if (!string.IsNullOrEmpty(Model.OrgNmr))
+        {
+            <p><strong>Organisationsnummer:</strong> @Model.OrgNmr</p>
+        }
+        @if (!string.IsNullOrEmpty(Model.CustomerNmr))
+        {
+            <p><strong>Kundnummer:</strong> @Model.CustomerNmr</p>
+        }
+        @if (!string.IsNullOrEmpty(Model.EmployeeNmr))
+        {
+            <p><strong>Anställningsnummer:</strong> @Model.EmployeeNmr</p>
+        }
+    </div>
+</div>

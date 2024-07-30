@@ -70,7 +70,6 @@ namespace Tengella.Survey.Business.Services
         public async Task<EmailSendResult> SendSurveyEmailsAsync(int templateId, List<int> recipientIds, int surveyFormId, string baseUrl)
         {
             var surveyLink = $"{baseUrl}/Response/RespondSurvey/{surveyFormId}";
-
             var recipients = await GetRecipientsByIdsAsync(recipientIds);
             var failedRecipients = new List<string>();
 
@@ -85,6 +84,8 @@ namespace Tengella.Survey.Business.Services
                 }
             }
 
+            await LogSurveyEmailSent(surveyFormId, recipients.Count);
+
             return new EmailSendResult
             {
                 Success = failedRecipients.Count == 0,
@@ -92,12 +93,40 @@ namespace Tengella.Survey.Business.Services
                 ErrorMessage = failedRecipients.Count > 0 ? "Some emails failed to send." : string.Empty
             };
         }
+
+        private async Task LogSurveyEmailSent(int surveyFormId, int recipientCount)
+        {
+            var log = await _context.AnalysisLogs
+                .FirstOrDefaultAsync(l => l.EntityId == surveyFormId && l.LogType == "SurveyEmailSent");
+
+            if (log == null)
+            {
+                log = new AnalysisLog
+                {
+                    LogType = "SurveyEmailSent",
+                    EntityId = surveyFormId,
+                    EntityName = (await _context.SurveyForms.FindAsync(surveyFormId))?.Name,
+                    Count = recipientCount,
+                    LastUpdated = DateTime.UtcNow
+                };
+                _context.AnalysisLogs.Add(log);
+        }
+            else
+            {
+                log.Count += recipientCount;
+                log.LastUpdated = DateTime.UtcNow;
+                _context.AnalysisLogs.Update(log);
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+
         public class EmailSendResult
         {
             public bool Success { get; set; }
             public List<string> FailedRecipients { get; set; } = new List<string>();
             public string ErrorMessage { get; set; }
         }
-
     }
 }

@@ -34,6 +34,11 @@ namespace Tengella.Survey.WebApp.Controllers
                 RecipientId = r.RecipientId,
                 Email = r.Email,
                 Name = r.Name,
+                Type = r.Type,
+                PersonNmr = r.PersonNmr,
+                OrgNmr = r.OrgNmr,
+                CustomerNmr = r.CustomerNmr,
+                EmployeeNmr = r.EmployeeNmr,
                 OptedOut = r.OptedOut
             });
 
@@ -66,7 +71,6 @@ namespace Tengella.Survey.WebApp.Controllers
                 }
                 else
                 {
-                    TempData["SuccessMessage"] = "Some emails sent successfully!";
                     TempData["ErrorMessage"] = $"Failed to send emails to the following recipients: {string.Join(", ", result.FailedRecipients)}";
                 }
 
@@ -89,7 +93,7 @@ namespace Tengella.Survey.WebApp.Controllers
             {
                 _context.Recipients.Add(recipient);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index), new { activeTab = "manage-recipients" });
             }
             return PartialView("_CreateRecipient", recipient);
         }
@@ -111,106 +115,9 @@ namespace Tengella.Survey.WebApp.Controllers
             {
                 _context.Recipients.Update(recipient);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index), new { activeTab = "manage-recipients" });
             }
             return PartialView("_CreateRecipient", recipient);
-        }
-
-        [HttpGet]
-        public IActionResult GetDeleteViewModel(string entityType, int entityId)
-        {
-            DeleteViewModel model = new DeleteViewModel();
-            switch (entityType)
-            {
-                case "Recipient":
-                    var recipient = _context.Recipients.Find(entityId);
-                    if (recipient == null) return NotFound();
-                    model = new DeleteViewModel
-                    {
-                        Title = "Delete Recipient",
-                        DeleteAction = nameof(DeleteRecipientsConfirmed),
-                        ReturnController = "EmailManagement",
-                        MultipleProperties = new List<Dictionary<string, string>>
-                {
-                    new Dictionary<string, string>
-                    {
-                        { "Email", recipient.Email },
-                        { "Name", recipient.Name }
-                    }
-                },
-                        PropertyIcons = new Dictionary<string, string>
-                {
-                    { "Email", "fas fa-envelope" },
-                    { "Name", "fas fa-user" }
-                }
-                    };
-                    break;
-
-                case "EmailTemplate":
-                    var template = _context.EmailTemplates.Find(entityId);
-                    if (template == null) return NotFound();
-                    model = new DeleteViewModel
-                    {
-                        Title = "Delete Email Template",
-                        DeleteAction = nameof(DeleteEmailTemplateConfirmed),
-                        ReturnController = "EmailManagement",
-                        MultipleProperties = new List<Dictionary<string, string>>
-                {
-                    new Dictionary<string, string>
-                    {
-                        { "Name", template.Name },
-                        { "Subject", template.Subject }
-                    }
-                },
-                        PropertyIcons = new Dictionary<string, string>
-                {
-                    { "Name", "fas fa-file-alt" },
-                    { "Subject", "fas fa-envelope-open-text" }
-                }
-                    };
-                    break;
-            }
-            return PartialView("_DeleteConfirmationModal", model);
-        }
-
-        public async Task<IActionResult> DeleteRecipients(List<int> ids)
-        {
-            var recipients = await _context.Recipients.Where(r => ids.Contains(r.RecipientId)).ToListAsync();
-            if (recipients.Count == 0)
-            {
-                return NotFound();
-            }
-
-            var model = new DeleteViewModel
-            {
-                Title = "Delete Recipients",
-                DeleteAction = nameof(DeleteRecipientsConfirmed),
-                ReturnController = "EmailManagement",
-                MultipleProperties = recipients.ConvertAll(r => new Dictionary<string, string>
-                {
-                    { "Email", r.Email },
-                    { "Name", r.Name }
-                }),
-                PropertyIcons = new Dictionary<string, string>
-                {
-                    { "Email", "fas fa-envelope" },
-                    { "Name", "fas fa-user" }
-                }
-            };
-
-            return View("Delete", model);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> DeleteRecipientsConfirmed(List<int> RecipientId)
-        {
-            var recipients = await _context.Recipients.Where(r => RecipientId.Contains(r.RecipientId)).ToListAsync();
-            if (recipients.Count != 0)
-            {
-                _context.Recipients.RemoveRange(recipients);
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToAction(nameof(Index), new { activeTab = "manage-recipients" });
         }
 
         public IActionResult UploadRecipients()
@@ -244,6 +151,11 @@ namespace Tengella.Survey.WebApp.Controllers
                     {
                         Email = worksheet.Cells[row, 1].Value?.ToString() ?? string.Empty,
                         Name = worksheet.Cells[row, 2].Value?.ToString() ?? string.Empty,
+                        Type = worksheet.Cells[row, 3].Value?.ToString() ?? string.Empty,
+                        PersonNmr = worksheet.Cells[row, 4].Value?.ToString(),
+                        OrgNmr = worksheet.Cells[row, 5].Value?.ToString(),
+                        CustomerNmr = worksheet.Cells[row, 6].Value?.ToString(),
+                        EmployeeNmr = worksheet.Cells[row, 7].Value?.ToString(),
                         OptedOut = false
                     };
                     recipients.Add(recipient);
@@ -253,7 +165,7 @@ namespace Tengella.Survey.WebApp.Controllers
             _context.Recipients.AddRange(recipients);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new { activeTab = "manage-recipients" });
         }
 
         public IActionResult CreateEmailTemplate()
@@ -268,7 +180,7 @@ namespace Tengella.Survey.WebApp.Controllers
             {
                 _context.EmailTemplates.Add(emailTemplate);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index), new { activeTab = "manage-tempaltes" });
             }
             return PartialView("_CreateEmailTemplate", emailTemplate);
         }
@@ -290,46 +202,60 @@ namespace Tengella.Survey.WebApp.Controllers
             {
                 _context.EmailTemplates.Update(emailTemplate);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index), new { activeTab = "manage-tempaltes" });
             }
             return PartialView("_CreateEmailTemplate", emailTemplate);
         }
 
-        public async Task<IActionResult> DeleteEmailTemplates(List<int> ids)
+        [HttpPost]
+        public async Task<IActionResult> DeleteRecipients(List<int> ids)
         {
-            var emailTemplates = await _context.EmailTemplates.Where(et => ids.Contains(et.EmailTemplateId)).ToListAsync();
-            if (emailTemplates.Count == 0)
+            var recipients = await _context.Recipients.Where(r => ids.Contains(r.RecipientId)).ToListAsync();
+            if (recipients.Count != 0)
             {
-                return NotFound();
+                _context.Recipients.RemoveRange(recipients);
+                await _context.SaveChangesAsync();
             }
-
-            var model = new DeleteViewModel
-            {
-                Title = "Delete Email Template",
-                DeleteAction = nameof(DeleteEmailTemplateConfirmed),
-                ReturnController = "EmailManagement",
-                MultipleProperties = emailTemplates.ConvertAll(et => new Dictionary<string, string>
-                {
-                    { "EmailTemplateId", et.EmailTemplateId.ToString() },
-                    { "Subject", et.Subject },
-                    { "Name", et.Name }
-                })
-            };
-
-            return View("Delete", model);
+            return RedirectToAction(nameof(Index), new { activeTab = "manage-recipients" });
         }
 
         [HttpPost]
-        public async Task<IActionResult> DeleteEmailTemplateConfirmed(List<int> EmailTemplateId)
+        public async Task<IActionResult> DeleteEmailTemplate(List<int> ids)
         {
-            var emailTemplate = await _context.EmailTemplates.Where(et => EmailTemplateId.Contains(et.EmailTemplateId)).ToListAsync();
-            if (emailTemplate.Count != 0)
+            var emailTemplates = await _context.EmailTemplates.Where(et => ids.Contains(et.EmailTemplateId)).ToListAsync();
+            if (emailTemplates.Count != 0)
             {
-                _context.EmailTemplates.RemoveRange(emailTemplate);
+                _context.EmailTemplates.RemoveRange(emailTemplates);
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index), new { activeTab = "manage-templates" });
         }
+
+
+        public async Task<IActionResult> RecipientDetails(int id)
+        {
+            var recipient = await _context.Recipients.FindAsync(id);
+            if (recipient == null)
+            {
+                return NotFound();
+            }
+
+            var model = new RecipientViewModel
+            {
+                RecipientId = recipient.RecipientId,
+                Email = recipient.Email,
+                Name = recipient.Name,
+                Type = recipient.Type,
+                PersonNmr = recipient.PersonNmr,
+                OrgNmr = recipient.OrgNmr,
+                CustomerNmr = recipient.CustomerNmr,
+                EmployeeNmr = recipient.EmployeeNmr,
+                OptedOut = recipient.OptedOut
+            };
+
+            return PartialView("_RecipientDetails", model);
+        }
+
 
         [HttpGet]
         public async Task<IActionResult> OptOut(string email)

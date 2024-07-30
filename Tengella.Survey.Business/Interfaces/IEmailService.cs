@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Tengella.Survey.Data.Models;
+﻿using Tengella.Survey.Data.Models;
 using static Tengella.Survey.Business.Services.EmailService;
 
 namespace Tengella.Survey.Business.Interfaces
