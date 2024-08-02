@@ -6,10 +6,18 @@ using Tengella.Survey.Data.Models;
 
 namespace Tengella.Survey.Business.Services
 {
-    public class SurveyService(SurveyDbContext context, ILogger<SurveyService> logger) : ISurveyService
+    public class SurveyService : ISurveyService
     {
-        private readonly SurveyDbContext _context = context;
-        private readonly ILogger<SurveyService> _logger = logger;
+        private readonly SurveyDbContext _context;
+        private readonly ILogger<SurveyService> _logger;
+        private readonly IAnalysisService _analysisService;
+
+        public SurveyService(SurveyDbContext context, ILogger<SurveyService> logger, IAnalysisService analysisService)
+        {
+            _context = context;
+            _logger = logger;
+            _analysisService = analysisService;
+        }
 
         public async Task<IEnumerable<SurveyForm>> GetSurveysAsync()
         {
@@ -32,12 +40,16 @@ namespace Tengella.Survey.Business.Services
         {
             _context.SurveyForms.Add(survey);
             await _context.SaveChangesAsync();
-            await LogEntityCounts(survey.Questions, "RepeatedQuestion");
+            await _analysisService.LogEntityCountsAsync(survey.Questions, "RepeatedQuestion", async q => await _analysisService.IsQuestionRepeatedAsync(q.Text, q.QuestionId));
         }
 
         public async Task UpdateSurveyAsync(SurveyForm survey, List<int> questionsToRemove, List<int> optionsToRemove)
         {
             _context.SurveyForms.Update(survey);
+
+            var oldQuestions = await _context.Questions.AsNoTracking()
+                    .Where(q => q.SurveyFormId == survey.SurveyFormId)
+                    .ToListAsync();
 
             foreach (var question in survey.Questions)
             {
@@ -68,7 +80,7 @@ namespace Tengella.Survey.Business.Services
                 var question = await _context.Questions.FindAsync(questionId);
                 if (question != null)
                 {
-                    await LogEntityCountChange(question, "RepeatedQuestion", -1);
+                    await _analysisService.LogEntityCountChangeAsync<Question>(question.Text, "RepeatedQuestion", -1);
                     _context.Questions.Remove(question);
                 }
             }
@@ -83,7 +95,42 @@ namespace Tengella.Survey.Business.Services
             }
 
             await _context.SaveChangesAsync();
-            await LogEntityCounts(survey.Questions, "RepeatedQuestion");
+
+            await LogRepeatedQuestionsAsync(survey, oldQuestions);
+        }
+
+        private async Task LogRepeatedQuestionsAsync(SurveyForm survey, List<Question> oldQuestions)
+        {
+            var oldQuestionDict = oldQuestions.ToDictionary(q => q.QuestionId);
+
+            foreach (var question in survey.Questions)
+            {
+                if (oldQuestionDict.TryGetValue(question.QuestionId, out var oldQuestion))
+                {
+                    if (oldQuestion.Text != question.Text)
+                    {
+                        // Old question text check
+                        if (await _analysisService.HasQuestionBeenRepeatedBeforeAsync(oldQuestion.Text))
+                        {
+                            await _analysisService.LogEntityCountChangeAsync<Question>(oldQuestion.Text, "RepeatedQuestion", -1);
+                        }
+
+                        // New question text check
+                        if (await _analysisService.IsQuestionRepeatedAsync(question.Text, question.QuestionId))
+                        {
+                            await _analysisService.LogEntityCountChangeAsync<Question>(question.Text, "RepeatedQuestion", 1);
+                        }
+                    }
+                }
+                else
+                {
+                    // New question
+                    if (await _analysisService.IsQuestionRepeatedAsync(question.Text, question.QuestionId))
+                    {
+                        await _analysisService.LogEntityCountChangeAsync<Question>(question.Text, "RepeatedQuestion", 1);
+                    }
+                }
+            }
         }
 
         public async Task DeleteSurveyAsync(int id)
@@ -96,9 +143,9 @@ namespace Tengella.Survey.Business.Services
             {
                 foreach (var question in survey.Questions)
                 {
-                    await LogEntityCountChange(question, "RepeatedQuestion", -1);
+                    await _analysisService.LogEntityCountChangeAsync<Question>(question.Text, "RepeatedQuestion", -1);
                 }
-                await LogEntityCountChange(survey, "SurveyEmailSent", -1);
+                await _analysisService.LogEntityCountChangeAsync<SurveyForm>(survey.Name, "SurveyEmailSent", -1, survey.SurveyFormId);
 
                 _context.SurveyForms.Remove(survey);
                 await _context.SaveChangesAsync();
@@ -127,76 +174,8 @@ namespace Tengella.Survey.Business.Services
 
             _context.SurveyForms.Add(newSurvey);
             await _context.SaveChangesAsync();
-            await LogEntityCounts(newSurvey.Questions, "RepeatedQuestion");
+            await _analysisService.LogEntityCountsAsync(newSurvey.Questions, "RepeatedQuestion", async q => await _analysisService.IsQuestionRepeatedAsync(q.Text, q.QuestionId));
             return newSurvey;
-        }
-
-        public async Task<int> GetTotalResponsesAsync(int surveyFormId)
-        {
-            var survey = await _context.SurveyForms
-                .Include(s => s.Questions)
-                .ThenInclude(q => q.Responses)
-                .FirstOrDefaultAsync(s => s.SurveyFormId == surveyFormId);
-
-            return survey == null
-                ? throw new InvalidOperationException("Survey not found.")
-                : survey.Questions
-                .SelectMany(q => q.Responses)
-                .GroupBy(r => r.ResponseGroupId)
-                .Count();
-        }
-
-        private async Task LogEntityCounts<T>(IEnumerable<T> entities, string logType) where T : class
-        {
-            foreach (var entity in entities)
-            {
-                await LogEntityCountChange(entity, logType, 1);
-            }
-        }
-
-        private async Task LogEntityCountChange<T>(T entity, string logType, int countChange) where T : class
-        {
-            if (entity == null) return;
-
-            var entityName = entity.GetType().GetProperty("Text")?.GetValue(entity)?.ToString();
-            var entityId = (int?)entity.GetType().GetProperty("QuestionId")?.GetValue(entity);
-
-            if (string.IsNullOrEmpty(entityName) || entityId == null) return;
-
-            var log = await _context.AnalysisLogs
-                .FirstOrDefaultAsync(l => l.EntityName == entityName && l.LogType == logType);
-
-            if (log == null)
-            {
-                if (countChange > 0)
-                {
-                    log = new AnalysisLog
-                    {
-                        LogType = logType,
-                        EntityId = entityId.Value,
-                        EntityName = entityName,
-                        Count = countChange,
-                        LastUpdated = DateTime.UtcNow
-                    };
-                    _context.AnalysisLogs.Add(log);
-                }
-            }
-            else
-            {
-                log.Count += countChange;
-                log.LastUpdated = DateTime.UtcNow;
-
-                if (log.Count <= 0)
-                {
-                    _context.AnalysisLogs.Remove(log);
-                }
-                else
-                {
-                    _context.AnalysisLogs.Update(log);
-                }
-            }
-
-            await _context.SaveChangesAsync();
         }
     }
 }

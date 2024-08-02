@@ -1,4 +1,11 @@
 $(document).ready(function () {
+    const $form = $('#sendEmailForm');
+    const $button = $('#sendEmailButton');
+    const $deleteSelectedRecipientsButton = $('#deleteSelectedRecipients');
+    const $deleteSelectedTemplatesButton = $('#deleteSelectedTemplates');
+
+    const validateForm = () => $button.prop('disabled', !$form[0].checkValidity());
+
     const params = new URLSearchParams(window.location.search);
     const activeTab = params.get('activeTab');
     if (activeTab) {
@@ -29,8 +36,14 @@ $(document).ready(function () {
         });
     }
 
-    const $deleteSelectedRecipientsButton = $('#deleteSelectedRecipients');
-    const $deleteSelectedTemplatesButton = $('#deleteSelectedTemplates');
+    $form.on('input', validateForm);
+    $form.on('submit', event => {
+        if (!$form[0].checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        $form.addClass('was-validated');
+    });
 
     $deleteSelectedRecipientsButton.on('click', function () {
         $('#deleteConfirmationModal').modal('show');
@@ -84,6 +97,8 @@ $(document).ready(function () {
     });
 
     $('.select-recipient, .select-template').on('change', toggleDeleteButtons);
+
+    validateForm();
 
     // Attach loadModal to global window object for usage in HTML attributes
     window.loadModal = loadModal;

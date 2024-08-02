@@ -1,4 +1,5 @@
-﻿using Tengella.Survey.Data.Models;
+﻿using Tengella.Survey.Business.Services;
+using Tengella.Survey.Data.Models;
 
 namespace Tengella.Survey.WebApp.Models
 {
@@ -7,5 +8,6 @@ namespace Tengella.Survey.WebApp.Models
         public List<AnalysisLog> RepeatedQuestions { get; set; }
         public List<AnalysisLog> SurveyCompletions { get; set; }
         public List<AnalysisLog> EmailSends { get; set; }
+        public List<SurveyResponseAnalysis> SurveyResponseAnalyses { get; set; }
     }
 }

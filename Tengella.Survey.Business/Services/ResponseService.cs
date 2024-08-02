@@ -5,9 +5,11 @@ using Tengella.Survey.Data.Models;
 
 namespace Tengella.Survey.Business.Services
 {
-    public class ResponseService(SurveyDbContext context) : IResponseService
+    public class ResponseService(SurveyDbContext context, IAnalysisService analysisService) : IResponseService
     {
         private readonly SurveyDbContext _context = context;
+        private readonly IAnalysisService _analysisService = analysisService;
+
         public Task<IEnumerable<Response>> CreateResponsesAsync(SurveyForm survey, IFormCollection form)
         {
             var responses = new List<Response>();
@@ -63,6 +65,9 @@ namespace Tengella.Survey.Business.Services
         {
             _context.Responses.AddRange(responses);
             await _context.SaveChangesAsync();
+
+            var surveyFormId = responses.First().SurveyFormId;
+            await _analysisService.LogSurveyResponseAsync(surveyFormId, 1);
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Tengella.Survey.Business.DTOs;
-using Tengella.Survey.Business.DTOs.Analysis;
 using Tengella.Survey.Business.Interfaces;
 using Tengella.Survey.Data;
 using Tengella.Survey.Data.Models;
@@ -11,6 +10,76 @@ namespace Tengella.Survey.Business.Services
     {
         private readonly SurveyDbContext _context = context;
 
+        public async Task LogEntityCountChangeAsync<T>(string entityName, string logType, int countChange, int? entityId = null) where T : class
+        {
+            var log = await _context.AnalysisLogs
+                .FirstOrDefaultAsync(l => l.EntityName == entityName && l.LogType == logType);
+
+            if (log == null)
+            {
+                if (countChange > 0)
+                {
+                    log = new AnalysisLog
+                    {
+                        LogType = logType,
+                        EntityId = entityId ?? 0,
+                        EntityName = entityName,
+                        Count = countChange,
+                        LastUpdated = DateTime.UtcNow
+                    };
+                    _context.AnalysisLogs.Add(log);
+                }
+            }
+            else
+            {
+                log.Count += countChange;
+                log.LastUpdated = DateTime.UtcNow;
+
+                if (log.Count <= 0)
+                {
+                    _context.AnalysisLogs.Remove(log);
+                }
+                else
+                {
+                    _context.AnalysisLogs.Update(log);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task LogEntityCountsAsync<T>(IEnumerable<T> entities, string logType, Func<T, Task<bool>> predicate) where T : class
+        {
+            foreach (var entity in entities)
+            {
+                if (await predicate(entity))
+                {
+                    var entityName = entity.GetType().GetProperty("Text")?.GetValue(entity)?.ToString();
+                    var entityId = (int?)entity.GetType().GetProperty("QuestionId")?.GetValue(entity);
+                    await LogEntityCountChangeAsync<T>(entityName, logType, 1, entityId);
+                }
+            }
+        }
+
+        public async Task LogSurveyResponseAsync(int surveyFormId, int responseCount)
+        {
+            var survey = await _context.SurveyForms.FindAsync(surveyFormId);
+            if (survey != null)
+            {
+                await LogEntityCountChangeAsync<SurveyForm>(survey.Name, "SurveyResponse", responseCount, surveyFormId);
+            }
+        }
+
+        public async Task<bool> IsQuestionRepeatedAsync(string questionText, int excludedQuestionId)
+        {
+            return await _context.Questions.AnyAsync(q => q.Text == questionText && q.QuestionId != excludedQuestionId);
+        }
+
+        public async Task<bool> HasQuestionBeenRepeatedBeforeAsync(string questionText)
+        {
+            return await _context.AnalysisLogs.AnyAsync(l => l.EntityName == questionText && l.LogType == "RepeatedQuestion");
+        }
+
         public async Task<List<AnalysisLog>> GetLogsByTypeAsync(string logType)
         {
             return await _context.AnalysisLogs
@@ -19,97 +88,84 @@ namespace Tengella.Survey.Business.Services
                 .ToListAsync();
         }
 
-        public async Task<SurveyAnalysis> AnalyzeSurveyAsync(int surveyFormId)
+        public async Task<SurveyResponseAnalysis> GetSurveyResponseAnalysisAsync(int surveyFormId)
         {
             var survey = await _context.SurveyForms
                 .Include(s => s.Questions)
-                    .ThenInclude(q => q.Options)
-                .Include(s => s.Questions)
                     .ThenInclude(q => q.Responses)
-                .AsSplitQuery()
+                .Include(s => s.Questions)
+                    .ThenInclude(q => q.Options)
                 .FirstOrDefaultAsync(s => s.SurveyFormId == surveyFormId);
 
-            if (survey == null)
-            {
-                throw new InvalidOperationException("Survey not found.");
-            }
+            if (survey == null) return null;
 
-            var surveyAnalysis = new SurveyAnalysis
+            var totalResponses = survey.Questions.Sum(q => q.Responses.Count);
+            var totalRespondents = survey.Questions.SelectMany(q => q.Responses).Select(r => r.ResponseGroupId).Distinct().Count();
+            var responseRate = (double)totalRespondents / totalRespondents;
+
+            var questionResponseCounts = survey.Questions.ToDictionary(
+                q => q.Text,
+                q => q.Responses.Count
+            );
+
+            var optionResponseRates = survey.Questions
+                .Where(q => q.Type == "Radio")
+                .SelectMany(q => q.Responses, (q, r) => new { QuestionText = q.Text, r.OptionId, r })
+                .GroupBy(qr => new { qr.QuestionText, qr.OptionId })
+                .ToDictionary(
+                    g => g.Key.QuestionText + "|" + _context.Options.First(o => o.OptionId == g.Key.OptionId).Text,
+                    g =>
+                    {
+                        var questionTotalResponses = survey.Questions.First(q => q.Text == g.Key.QuestionText).Responses.Count;
+                        var responseCount = g.Count();
+                        var responseRate = (double)responseCount / questionTotalResponses;
+                        return new { Count = responseCount, Rate = responseRate };
+                    }
+                );
+
+            var shortAnswerResponses = survey.Questions
+                .Where(q => q.Type == "Open")
+                .ToDictionary(
+                    q => q.Text,
+                    q => q.Responses.Select(r => r.TextResponse).ToList()
+                );
+
+            return new SurveyResponseAnalysis
             {
                 SurveyFormId = surveyFormId,
-                TotalResponses = survey.Questions.Sum(q => q.Responses.Count),
-                SurveyForm = survey
+                TotalResponses = totalResponses,
+                LastResponseDate = survey.Questions.SelectMany(q => q.Responses).Max(r => (DateTime?)r.ResponseDate),
+                ResponseRate = responseRate,
+                QuestionResponseCounts = questionResponseCounts,
+                OptionResponseRates = optionResponseRates.ToDictionary(k => k.Key, v => v.Value.Rate),
+                OptionResponseCounts = optionResponseRates.ToDictionary(k => k.Key, v => v.Value.Count),
+                ShortAnswerResponses = shortAnswerResponses
             };
-
-            foreach (var question in survey.Questions)
-            {
-                var questionAnalysis = new QuestionAnalysis
-                {
-                    QuestionId = question.QuestionId,
-                    TotalResponses = question.Responses.Count,
-                    Question = question
-                };
-
-                if (question.Type == "Radio")
-                {
-                    foreach (var option in question.Options)
-                    {
-                        var optionAnalysis = new OptionAnalysis
-                        {
-                            OptionId = option.OptionId,
-                            ResponseCount = question.Responses.Count(r => r.OptionId == option.OptionId),
-                            Option = option
-                        };
-                        questionAnalysis.OptionAnalyses.Add(optionAnalysis);
-                    }
-                    questionAnalysis.AverageRating = questionAnalysis.OptionAnalyses.Count != 0
-                        ? questionAnalysis.OptionAnalyses.Average(o => o.ResponseCount)
-                        : 0;
-                }
-
-                surveyAnalysis.QuestionAnalyses.Add(questionAnalysis);
-            }
-
-            return surveyAnalysis;
         }
 
-        public async Task<SurveySummary> GetSurveySummaryAsync()
+
+        public async Task<List<AnalysisLog>> GetRepeatedQuestionsAsync()
         {
-            var surveys = await _context.SurveyForms
-                .Include(s => s.Questions)
-                    .ThenInclude(q => q.Responses)
+            return await _context.AnalysisLogs
+                .Where(l => l.LogType == "RepeatedQuestion")
+                .OrderByDescending(l => l.Count)
                 .ToListAsync();
+        }
 
-            var activeSurveys = surveys.Where(s => s.ClosingDate >= DateTime.Today).ToList();
-            var closedSurveys = surveys.Where(s => s.ClosingDate < DateTime.Today).ToList();
+        public async Task<List<AnalysisLog>> GetSurveyCompletionsAsync()
+        {
+            return await _context.AnalysisLogs
+                .Where(l => l.LogType == "SurveyResponse")
+                .OrderByDescending(l => l.Count)
+                .ToListAsync();
+        }
 
-            var surveySummaries = surveys.ConvertAll(s => new SurveySummaryItem
-            {
-                SurveyFormId = s.SurveyFormId,
-                Name = s.Name,
-                Type = s.Type,
-                ClosingDate = s.ClosingDate,
-                TotalResponses = s.Questions.Sum(q => q.Responses.Count),
-                TotalTimesTaken = s.Questions.SelectMany(q => q.Responses)
-                                            .GroupBy(r => r.ResponseGroupId)
-                                            .Distinct()
-                                            .Count()
-            });
-
-            var closedSurveySummaries = closedSurveys.ConvertAll(s => new SurveySummaryItem
-            {
-                SurveyFormId = s.SurveyFormId,
-                Name = s.Name,
-                Type = s.Type,
-                ClosingDate = s.ClosingDate,
-                TotalResponses = s.Questions.Sum(q => q.Responses.Count),
-                TotalTimesTaken = s.Questions.SelectMany(q => q.Responses)
-                                        .GroupBy(r => r.ResponseGroupId)
-                                        .Distinct()
-                                        .Count()
-            });
-
-            return new SurveySummary { Surveys = surveySummaries, ClosedSurveys = closedSurveySummaries };
+        public async Task<List<AnalysisLog>> GetEmailSendsAsync()
+        {
+            return await _context.AnalysisLogs
+                .Where(l => l.LogType == "SurveyEmailSent")
+                .OrderByDescending(l => l.Count)
+                .ToListAsync();
         }
 
         public async Task<QuestionTrendAnalysis> GetQuestionTrendAnalysisAsync(int questionId)
@@ -134,17 +190,19 @@ namespace Tengella.Survey.Business.Services
                     }).ToList()
             };
         }
-
-        public async Task<Dictionary<string, int>> GetRepeatedQuestionsAsync()
-        {
-            return await _context.Questions
-                .GroupBy(q => q.Text)
-                .Select(group => new
-                {
-                    Text = group.Key,
-                    Count = group.Count()
-                })
-                .ToDictionaryAsync(g => g.Text, g => g.Count);
-        }
     }
+
+    public class SurveyResponseAnalysis
+    {
+        public int SurveyFormId { get; set; }
+        public int ResponseCount { get; set; }
+        public int TotalResponses { get; set; }
+        public DateTime? LastResponseDate { get; set; }
+        public double ResponseRate { get; set; }
+        public Dictionary<string, int> QuestionResponseCounts { get; set; }
+        public Dictionary<string, double> OptionResponseRates { get; set; }
+        public Dictionary<string, int> OptionResponseCounts { get; set; }
+        public Dictionary<string, List<string>> ShortAnswerResponses { get; set; }
+    }
+
 }

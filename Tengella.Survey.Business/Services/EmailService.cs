@@ -7,9 +7,10 @@ using Tengella.Survey.Data.Models;
 
 namespace Tengella.Survey.Business.Services
 {
-    public class EmailService(SurveyDbContext context) : IEmailService
+    public class EmailService(SurveyDbContext context, IAnalysisService analysisService) : IEmailService
     {
         private readonly SurveyDbContext _context = context;
+        private readonly IAnalysisService _analysisService = analysisService;
 
         public async Task<List<EmailTemplate>> GetEmailTemplatesAsync()
         {
@@ -84,7 +85,11 @@ namespace Tengella.Survey.Business.Services
                 }
             }
 
-            await LogSurveyEmailSent(surveyFormId, recipients.Count);
+            var survey = await _context.SurveyForms.FindAsync(surveyFormId);
+            if (survey != null)
+            {
+                await _analysisService.LogEntityCountChangeAsync<SurveyForm>(survey.Name, "SurveyEmailSent", recipients.Count, surveyFormId);
+            }
 
             return new EmailSendResult
             {
@@ -92,41 +97,13 @@ namespace Tengella.Survey.Business.Services
                 FailedRecipients = failedRecipients,
                 ErrorMessage = failedRecipients.Count > 0 ? "Some emails failed to send." : string.Empty
             };
-        }
-
-        private async Task LogSurveyEmailSent(int surveyFormId, int recipientCount)
-        {
-            var log = await _context.AnalysisLogs
-                .FirstOrDefaultAsync(l => l.EntityId == surveyFormId && l.LogType == "SurveyEmailSent");
-
-            if (log == null)
-            {
-                log = new AnalysisLog
-                {
-                    LogType = "SurveyEmailSent",
-                    EntityId = surveyFormId,
-                    EntityName = (await _context.SurveyForms.FindAsync(surveyFormId))?.Name,
-                    Count = recipientCount,
-                    LastUpdated = DateTime.UtcNow
-                };
-                _context.AnalysisLogs.Add(log);
-        }
-            else
-            {
-                log.Count += recipientCount;
-                log.LastUpdated = DateTime.UtcNow;
-                _context.AnalysisLogs.Update(log);
             }
-
-            await _context.SaveChangesAsync();
-        }
-
 
         public class EmailSendResult
         {
             public bool Success { get; set; }
-            public List<string> FailedRecipients { get; set; } = new List<string>();
-            public string ErrorMessage { get; set; }
+            public List<string> FailedRecipients { get; set; } = [];
+            public string ErrorMessage { get; set; } = string.Empty;
         }
     }
 }

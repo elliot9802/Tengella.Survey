@@ -1,91 +1,129 @@
 ﻿@model SurveySummaryViewModel
 
 @{
-    ViewData["Title"] = "Enkät Rapport/Analys";
+    ViewData["Title"] = "Enkätsammandrag";
 }
 
-<h1>@ViewData["Title"]</h1>
+<div class="container mt-4">
+    <h1 class="text-center">Enkätsammandrag</h1>
 
-<h3>Upprepade Frågor</h3>
-@if (Model.RepeatedQuestions.Any())
-{
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Fråga</th>
-                    <th>Antal gånger upprepad</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var log in Model.RepeatedQuestions)
-                {
+    <h3>Alla enkäter</h3>
+    @if (Model.SurveyResponseAnalyses.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="thead-dark">
                     <tr>
-                        <td>@log.EntityName</td>
-                        <td>@log.Count</td>
+                        <th>Enkät ID</th>
+                        <th>Totalt antal svar</th>
+                        <th>Svarsfrekvens</th>
+                        <th>Senaste svarsdatum</th>
+                        <th>Åtgärder</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-}
-else
-{
-    <p>Inga upprepade frågor hittades.</p>
-}
+                </thead>
+                <tbody>
+                    @foreach (var analysis in Model.SurveyResponseAnalyses)
+                    {
+                        <tr>
+                            <td>@analysis.SurveyFormId</td>
+                            <td>@analysis.TotalResponses</td>
+                            <td>@analysis.ResponseRate.ToString("P")</td>
+                            <td>@analysis.LastResponseDate?.ToString("g")</td>
+                            <td>
+                                <a href="@Url.Action("SurveyAnalysis", "SurveyAnalysis", new { id = analysis.SurveyFormId })" class="btn btn-primary">Visa analys</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p>Inga enkäter hittades.</p>
+    }
 
-<h3>Enkäter Slutförda</h3>
-@if (Model.SurveyCompletions.Any())
-{
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Enkät</th>
-                    <th>Antal gånger slutförd</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var log in Model.SurveyCompletions)
-                {
+    <h3>Upprepade frågor</h3>
+    @if (Model.RepeatedQuestions.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="thead-dark">
                     <tr>
-                        <td>@log.EntityName</td>
-                        <td>@log.Count</td>
+                        <th>Fråga</th>
+                        <th>Antal upprepningar</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-}
-else
-{
-    <p>Inga slutförda enkäter hittades.</p>
-}
+                </thead>
+                <tbody>
+                    @foreach (var log in Model.RepeatedQuestions)
+                    {
+                        <tr>
+                            <td>@log.EntityName</td>
+                            <td>@log.Count</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p>Inga upprepade frågor hittades.</p>
+    }
 
-<h3>Skickade Email</h3>
-@if (Model.EmailSends.Any())
-{
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Enkät</th>
-                    <th>Antal mottagare</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var log in Model.EmailSends)
-                {
+    <h3>Slutförda enkäter</h3>
+    @if (Model.SurveyCompletions.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="thead-dark">
                     <tr>
-                        <td>@log.EntityName</td>
-                        <td>@log.Count</td>
+                        <th>Enkät</th>
+                        <th>Antal slutföranden</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-}
-else
-{
-    <p>Inga skickade email hittades.</p>
-}
+                </thead>
+                <tbody>
+                    @foreach (var log in Model.SurveyCompletions)
+                    {
+                        <tr>
+                            <td>@log.EntityName</td>
+                            <td>@log.Count</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p>Inga slutförda enkäter hittades.</p>
+    }
+
+    <h3>Skickade e-postmeddelanden</h3>
+    @if (Model.EmailSends.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Enkät</th>
+                        <th>Antal mottagare</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in Model.EmailSends)
+                    {
+                        <tr>
+                            <td>@log.EntityName</td>
+                            <td>@log.Count</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p>Inga skickade e-postmeddelanden hittades.</p>
+    }
+</div>

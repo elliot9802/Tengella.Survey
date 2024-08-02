@@ -182,3 +182,7 @@ main {
     margin-bottom: 10px;
     padding: 15px;
 }
+
+.ct-chart {
+    max-height: 400px;
+}
