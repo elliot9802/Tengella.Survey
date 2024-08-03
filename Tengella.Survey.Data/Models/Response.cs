@@ -8,8 +8,8 @@ namespace Tengella.Survey.Data.Models
         public Guid ResponseGroupId { get; set; }
         public int SurveyFormId { get; set; }
         public int QuestionId { get; set; }
-        public int? OptionId { get; set; }  // Nullable for open-ended responses
-        public string? TextResponse { get; set; }  // Nullable for option responses
+        public int? OptionId { get; set; }
+        public string? TextResponse { get; set; }
         public DateTime ResponseDate { get; set; } = DateTime.Today;
 
         [ValidateNever]

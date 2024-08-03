@@ -4,24 +4,24 @@
     bool isEdit = Model?.RecipientId > 0;
 }
 
-<h1>@(isEdit ? "Edit Recipient" : "Create Recipient")</h1>
+<h1>@(isEdit ? "Redigera Mottagare" : "Skapa Mottagare")</h1>
 
 <form asp-action="@(isEdit ? "EditRecipient" : "CreateRecipient")" method="post">
     <div class="form-group">
         <input asp-for="RecipientId" class="form-control" hidden />
 
-        <label>Email</label>
+        <label>E-post</label>
         <input asp-for="Email" class="form-control" required />
         <span asp-validation-for="Email" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label>Name</label>
+        <label>Namn</label>
         <input asp-for="Name" class="form-control" required />
     </div>
     <div class="form-group">
-        <label>Type</label>
+        <label>Typ</label>
         <select asp-for="Type" class="form-control" required>
-            <option value="">Select Type</option>
+            <option value="">Välj typ</option>
             <option value="Privatperson">Privatperson</option>
             <option value="Företag">Företag</option>
             <option value="Offentlig verksamhet">Offentlig verksamhet</option>
@@ -43,5 +43,5 @@
         <label>Anställningsnummer</label>
         <input asp-for="EmployeeNmr" class="form-control" />
     </div>
-    <button type="submit" class="btn btn-primary mt-3">@((isEdit ? "Update" : "Create"))</button>
+    <button type="submit" class="btn btn-primary mt-3">@((isEdit ? "Uppdatera" : "Skapa"))</button>
 </form>

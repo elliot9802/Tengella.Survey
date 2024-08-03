@@ -1,11 +1,11 @@
 ﻿@model SurveySummaryViewModel
 
 @{
-    ViewData["Title"] = "Enkätsammandrag";
+    ViewData["Title"] = "Enkät analys";
 }
 
 <div class="container mt-4">
-    <h1 class="text-center">Enkätsammandrag</h1>
+    <h1 class="text-center">@ViewData["Title"]</h1>
 
     <h3>Alla enkäter</h3>
     @if (Model.SurveyResponseAnalyses.Any())

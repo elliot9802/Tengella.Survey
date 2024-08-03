@@ -1,30 +1,31 @@
 ﻿@model EmailTemplate
 
 @{
-    string defaultBody = $@"<p>Dear {{RecipientName}},</p>
-<p>Please click the following link to participate in our survey:</p>
-<p><a href='{{SurveyLink}}'>Survey Link</a></p>
-<p>If you do not wish to receive further emails, <a href='{{OptOutLink}}'>click here to opt-out</a>.</p>";
+    string defaultBody = $@"<p>Kära {{RecipientName}},</p>
+        <p>Vi skulle uppskatta din hjälp genom att delta i vår enkät. Din feedback är mycket viktig för oss.</p>
+        <p>Klicka på följande länk för att delta: <a href='{{SurveyLink}}'>Delta i enkäten</a></p>
+        <p>Om du inte vill få fler e-postmeddelanden från oss, kan du <a href='{{OptOutLink}}'>avregistrera dig här</a>.</p>
+        <p>Tack för din tid och medverkan!</p>";
 
     bool isEdit = Model?.EmailTemplateId > 0;
 }
 
-<h1>@(isEdit ? "Edit Email Template" : "Create Email Template")</h1>
+<h1>@(isEdit ? "Redigera e-postmall" : "Skapa e-postmall")</h1>
 
 <form asp-action="@(isEdit ? "EditEmailTemplate" : "CreateEmailTemplate")" method="post">
     <input asp-for="EmailTemplateId" class="form-control" hidden />
     <div class="form-group">
-        <label>Name</label>
+        <label>Namn</label>
         <input asp-for="Name" class="form-control" required />
     </div>
     <div class="form-group">
-        <label>Subject</label>
+        <label>Ämne</label>
         <input asp-for="Subject" class="form-control" required />
     </div>
     <div class="form-group">
-        <label>Body</label>
+        <label>Innehåll</label>
         <textarea asp-for="Body" class="form-control" rows="10" placeholder="@defaultBody" required>@Html.Raw(Model?.Body ?? defaultBody)</textarea>
-        <small>You can use {SurveyLink} as a placeholder for the survey link, {RecipientName} for the recipient's name, and {OptOutLink} for the opt-out link.</small>
+        <small>Du kan använda {SurveyLink} för enkäten, {RecipientName} för mottagarens namn och {OptOutLink} för avregistreringslänken.</small>
     </div>
-    <button type="submit" class="btn btn-primary">@((isEdit ? "Update" : "Create"))</button>
+    <button type="submit" class="btn btn-primary">@((isEdit ? "Uppdatera" : "Skapa"))</button>
 </form>

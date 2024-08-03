@@ -132,7 +132,7 @@ namespace Tengella.Survey.WebApp.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // GET: Survey/PreviewSurvey
+        // GET: Survey/PreviewSurvey/5
         public async Task<IActionResult> PreviewSurvey(int? id)
         {
             SurveyFormViewModel? survey;

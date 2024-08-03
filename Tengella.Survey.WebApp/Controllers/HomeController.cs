@@ -16,19 +16,20 @@ namespace WebApp.Controllers
             return View(surveys);
         }
 
+        // GET: Home/CheckSurvey/5
         [HttpGet]
         public async Task<IActionResult> CheckSurvey(int id)
         {
             var survey = await _surveyService.GetSurveyByIdAsync(id);
             if (survey == null)
             {
-                TempData["ErrorMessage"] = "The survey does not exist.";
+                TempData["ErrorMessage"] = "Enkäten finns inte.";
                 return RedirectToAction("Index");
             }
 
             if (survey.ClosingDate < DateTime.Today)
             {
-                TempData["ErrorMessage"] = "This survey is closed and cannot be responded to.";
+                TempData["ErrorMessage"] = "Denna enkät är stängd och kan inte besvaras.";
                 return RedirectToAction("Index");
             }
 

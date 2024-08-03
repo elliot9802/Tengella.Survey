@@ -1,7 +1,7 @@
 ﻿@model SurveyForm
 
 @{
-    ViewData["Title"] = "Respond to Survey";
+    ViewData["Title"] = "Svara på enkät";
     var errorMessage = TempData["ErrorMessage"] as string;
     var cachedResponses = ViewBag.CachedResponses as List<Response> ?? [];
 }
@@ -22,15 +22,15 @@
         <div class="card mb-3 survey-info-card">
             <div class="card-body">
                 <div class="form-group mb-4">
-                    <label class="form-label">Survey Title:</label>
+                    <label class="form-label">Enkättitel:</label>
                     <p class="form-control-plaintext">@Model.Name</p>
                 </div>
                 <div class="form-group mb-4">
-                    <label class="form-label">Survey Type:</label>
+                    <label class="form-label">Enkättyp:</label>
                     <p class="form-control-plaintext">@Model.Type</p>
                 </div>
                 <div class="form-group mb-4">
-                    <label class="form-label">Closing Date:</label>
+                    <label class="form-label">Sista datum:</label>
                     <p class="form-control-plaintext">@Model.ClosingDate.ToString("yyyy-MM-dd")</p>
                 </div>
             </div>
@@ -73,7 +73,7 @@
             }
         </div>
 
-        <button type="submit" class="btn btn-primary">Submit Response</button>
+        <button type="submit" class="btn btn-primary">Skicka svar</button>
     </form>
 </div>
 

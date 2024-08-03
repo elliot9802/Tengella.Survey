@@ -17,7 +17,7 @@ $(function () {
         if (questionType === 'Open') return true;
         const optionsCount = $(element).closest('.question-card').find('.options-container .input-group').length;
         return optionsCount >= 2 && optionsCount <= 10;
-    }, "Each question must have between 2 and 10 options.");
+    }, "Varje fråga måste ha mellan 2 - 10 alternativ.");
 
     $('#surveyForm').validate({
         rules: {
@@ -26,9 +26,9 @@ $(function () {
             'ClosingDate': { required: true, date: true }
         },
         messages: {
-            'Name': { required: "Survey name is required", maxlength: "Survey name cannot exceed 100 characters" },
-            'Type': { required: "Survey type is required", maxlength: "Survey type cannot exceed 50 characters" },
-            'ClosingDate': { required: "Closing date is required", date: "Please enter a valid date" }
+            'Name': { required: "Enkätnamn är obligatoriskt", maxlength: "Enkätnamn får inte överstiga 100 tecken" },
+            'Type': { required: "Enkättyp är obligatorisk", maxlength: "Enkättyp får inte överstiga 50 tecken" },
+            'ClosingDate': { required: "Sista datum är obligatoriskt", date: "Ange ett giltligt datum" }
         },
         errorElement: 'div',
         errorClass: 'text-danger'
@@ -39,7 +39,7 @@ $(function () {
             'Answer': { required: true, maxlength: 350 },
         },
         messages: {
-            'Answer': { required: "Survey answer is required", maxlength: "Survey answer cannot exceed 350 characters" }
+            'Answer': { required: "Enkätsvar är obligatoriskt", maxlength: "Enkätsvar får inte överstiga 350 tecken" }
         },
         errorElement: 'div',
         errorClass: 'text-danger'
@@ -58,7 +58,7 @@ $(function () {
             if (optionsCount < 2 || optionsCount > 10) {
                 valid = false;
                 if (!errorContainer.length) {
-                    $(this).find('.options-container').after('<div class="options-error text-danger">Each question must have between 2 and 10 options.</div>');
+                    $(this).find('.options-container').after('<div class="options-error text-danger">Varje fråga måste ha mellan 2 - 10 alternativ.</div>');
                 }
             } else {
                 errorContainer.remove();
@@ -87,22 +87,22 @@ $(function () {
             <div class="card mb-3 question-card" id="question-${questionCount}">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h6 class="card-title" data-question-index="${questionCount}">Question ${questionCount + 1}</h6>
+                        <h6 class="card-title" data-question-index="${questionCount}">Fråga ${questionCount + 1}</h6>
                         <button type="button" class="btn-close remove-question-btn" aria-label="Close" data-question-index="${questionCount}"></button>
                     </div>
                     <div class="question-content mt-3">
                         <div class="form-group">
                             <input type="hidden" name="Questions[${questionCount}].QuestionId" value="0" />
-                            <input name="Questions[${questionCount}].Text" class="form-control question-text" placeholder="Enter question text" />
+                            <input name="Questions[${questionCount}].Text" class="form-control question-text" placeholder="Ange frågetext" />
                         </div>
                         <div class="form-group mt-3">
                             <select name="Questions[${questionCount}].Type" class="form-control question-type" data-question-index="${questionCount}">
-                                <option value="Radio">Multiple Choice</option>
-                                <option value="Open">Short Answer</option>
+                                <option value="Radio">Flervalsfråga</option>
+                                <option value="Open">Kort svar</option>
                             </select>
                         </div>
                         <div class="options-container mt-3"></div>
-                        <button type="button" class="btn btn-link add-option-btn mt-3" data-question-index="${questionCount}" style="display:none;">Add Option</button>
+                        <button type="button" class="btn btn-link add-option-btn mt-3" data-question-index="${questionCount}" style="display:none;">Lägg till alternativ</button>
                     </div>
                 </div>
             </div>
@@ -145,10 +145,9 @@ $(function () {
         const questionIndex = $(event.target).data('question-index');
         const optionsContainer = $(`#question-${questionIndex} .options-container`);
         const optionCount = optionsContainer.children().length;
-        console.log(`Adding option ${optionCount} to question ${questionIndex}`);
         const optionHtml = `
             <div class="input-group mb-2" id="question-${questionIndex}-option-${optionCount}">
-                <input name="Questions[${questionIndex}].Options[${optionCount}].Text" class="form-control" placeholder="Enter option text" />
+                <input name="Questions[${questionIndex}].Options[${optionCount}].Text" class="form-control" placeholder="Ange alternativtext" />
                 <input type="hidden" name="Questions[${questionIndex}].Options[${optionCount}].OptionId" value="0" />
                 <button type="button" class="btn-close remove-option-btn btn-outline-danger" aria-label="Close" data-question-index="${questionIndex}" data-option-index="${optionCount}"></button>
             </div>
@@ -185,7 +184,6 @@ $(function () {
         const questionIndex = $(event.target).data('question-index');
         const optionIndex = $(event.target).data('option-index');
         const optionId = $(event.target).data('option-id');
-        console.log(`Removing option ${optionIndex} from question ${questionIndex} with ID ${optionId}`);
         if (optionId) {
             optionsToRemove.push(optionId);
         }

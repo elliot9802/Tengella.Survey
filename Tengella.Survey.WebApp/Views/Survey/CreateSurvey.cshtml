@@ -1,7 +1,7 @@
 ﻿@model SurveyFormViewModel
 
 @{
-    ViewData["Title"] = Model.SurveyFormId == 0 ? "Create Survey" : "Edit Survey";
+    ViewData["Title"] = Model.SurveyFormId == 0 ? "Skapa Enkät" : "Redigera Enkät";
 }
 
 <div id="createSurvey">
@@ -15,22 +15,22 @@
         <div class="card mb-3 survey-info-card">
             <div class="card-body">
                 <div class="form-group mb-4">
-                    <label asp-for="Name" class="form-label"></label>
-                    <input asp-for="Name" class="form-control" placeholder="Survey Title" />
+                    <label asp-for="Name" class="form-label">Enkättitel</label>
+                    <input asp-for="Name" class="form-control" placeholder="Enkättitel" />
                     <span asp-validation-for="Name" class="text-danger"></span>
                 </div>
                 <div class="form-group mb-4">
-                    <label asp-for="Type" class="form-label"></label>
-                    <input asp-for="Type" class="form-control" placeholder="Survey Type" />
+                    <label asp-for="Type" class="form-label">Enkättyp</label>
+                    <input asp-for="Type" class="form-control" placeholder="Enkättyp" />
                     <span asp-validation-for="Type" class="text-danger"></span>
                 </div>
                 <div class="form-group mb-4">
-                    <label asp-for="ClosingDate" class="form-label"></label>
+                    <label asp-for="ClosingDate" class="form-label">Sista datum</label>
                     <input asp-for="ClosingDate" class="form-control" type="date" />
                     <span asp-validation-for="ClosingDate" class="text-danger"></span>
                 </div>
-                <button type="submit" class="btn btn-primary">Save Survey</button>
-                <button type="button" class="btn btn-secondary" id="previewSurveyBtn">Preview Survey</button>
+                <button type="submit" class="btn btn-primary">Spara</button>
+                <button type="button" class="btn btn-secondary" id="previewSurveyBtn">Förhandsgranska</button>
             </div>
         </div>
 
@@ -40,21 +40,23 @@
                 @foreach (var question in Model.Questions)
                 {
                     var questionIndex = Model.Questions.ToList().IndexOf(question);
+                    var displayStyle = question.Type == "Radio" ? "block" : "none";
+
                     <div class="card mb-3 question-card" id="question-@(questionIndex)">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center">
-                                <h6 class="card-title" data-question-index="@questionIndex">Question @(questionIndex + 1)</h6>
+                                <h6 class="card-title" data-question-index="@questionIndex">Fråga @(questionIndex + 1)</h6>
                                 <button type="button" class="btn-close remove-question-btn" aria-label="Close" data-question-index="@questionIndex" data-question-id="@question.QuestionId"></button>
                             </div>
                             <div class="question-content mt-3">
                                 <div class="form-group">
                                     <input type="hidden" name="Questions[@questionIndex].QuestionId" value="@question.QuestionId" />
-                                    <input name="Questions[@questionIndex].Text" class="form-control question-text" value="@question.Text" placeholder="Enter question text" />
+                                    <input name="Questions[@questionIndex].Text" class="form-control question-text" value="@question.Text" placeholder="Ange frågetext" />
                                 </div>
                                 <div class="form-group mt-3">
                                     <select name="Questions[@questionIndex].Type" class="form-control question-type" data-question-index="@questionIndex">
-                                        <option value="Radio" selected="@(question.Type == "Radio" ? "selected" : null)">Multiple Choice</option>
-                                        <option value="Open" selected="@(question.Type == "Open" ? "selected" : null)">Short Answer</option>
+                                        <option value="Radio" selected="@(question.Type == "Radio" ? "selected" : null)">Flervalsfråga</option>
+                                        <option value="Open" selected="@(question.Type == "Open" ? "selected" : null)">Kort svar</option>
                                     </select>
                                 </div>
                                 <div class="options-container mt-3">
@@ -63,19 +65,19 @@
                                         var optionIndex = question.Options.ToList().IndexOf(option);
                                         <div class="input-group mb-2" id="question-@(questionIndex)-option-@(optionIndex)">
                                             <input type="hidden" name="Questions[@questionIndex].Options[@optionIndex].OptionId" value="@option.OptionId" />
-                                            <input name="Questions[@questionIndex].Options[@optionIndex].Text" class="form-control" value="@option.Text" placeholder="Enter option text" />
+                                            <input name="Questions[@questionIndex].Options[@optionIndex].Text" class="form-control" value="@option.Text" placeholder="Ange alternativtext" />
                                             <button type="button" class="btn-close remove-option-btn btn-outline-danger" aria-label="Close" data-question-index="@questionIndex" data-option-index="@optionIndex" data-option-id="@option.OptionId" data-question-id="@question.QuestionId"></button>
                                         </div>
                                     }
                                 </div>
-                                <button type="button" class="btn btn-link add-option-btn mt-3" data-question-index="@questionIndex" style="display:@(question.Type == "Radio" ? "block" : "none")">Add Option</button>
+                                <button type="button" class="btn btn-link add-option-btn mt-3" data-question-index="@questionIndex" style="display:@displayStyle">Lägg till alternativ</button>
                             </div>
                         </div>
                     </div>
                 }
             }
         </div>
-        <button type="button" class="btn btn-secondary" id="add-question-btn">Add Question</button>
+        <button type="button" class="btn btn-secondary" id="add-question-btn">Lägg till fråga</button>
     </form>
 </div>
 

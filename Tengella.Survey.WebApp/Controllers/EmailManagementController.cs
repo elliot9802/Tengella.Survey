@@ -67,17 +67,17 @@ namespace Tengella.Survey.WebApp.Controllers
 
                 if (result.Success)
                 {
-                    TempData["SuccessMessage"] = "All emails sent successfully!";
+                    TempData["SuccessMessage"] = "Alla e-postmeddelanden skickade!";
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = $"Failed to send emails to the following recipients: {string.Join(", ", result.FailedRecipients)}";
+                    TempData["ErrorMessage"] = $"Misslyckades med att skicka e-postmeddelanden till följande mottagare: {string.Join(", ", result.FailedRecipients)}";
                 }
 
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["ErrorMessage"] = "Failed to send emails. Please check your input.";
+            TempData["ErrorMessage"] = "Misslyckades med att skicka e-postmeddelanden. Vänligen dubbelkolla inmatning.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -118,54 +118,6 @@ namespace Tengella.Survey.WebApp.Controllers
                 return RedirectToAction(nameof(Index), new { activeTab = "manage-recipients" });
             }
             return PartialView("_CreateRecipient", recipient);
-        }
-
-        public IActionResult UploadRecipients()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> UploadRecipients(IFormFile file)
-        {
-            if (file == null || file.Length == 0)
-            {
-                ModelState.AddModelError(string.Empty, "Please select a valid file.");
-                return View();
-            }
-
-            var recipients = new List<Recipient>();
-
-            await using (var stream = new MemoryStream())
-            {
-                await file.CopyToAsync(stream);
-                stream.Position = 0;
-                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-                using var package = new ExcelPackage(stream);
-                var worksheet = package.Workbook.Worksheets.First();
-                var rowCount = worksheet.Dimension.Rows;
-
-                for (int row = 2; row <= rowCount; row++)
-                {
-                    var recipient = new Recipient
-                    {
-                        Email = worksheet.Cells[row, 1].Value?.ToString() ?? string.Empty,
-                        Name = worksheet.Cells[row, 2].Value?.ToString() ?? string.Empty,
-                        Type = worksheet.Cells[row, 3].Value?.ToString() ?? string.Empty,
-                        PersonNmr = worksheet.Cells[row, 4].Value?.ToString(),
-                        OrgNmr = worksheet.Cells[row, 5].Value?.ToString(),
-                        CustomerNmr = worksheet.Cells[row, 6].Value?.ToString(),
-                        EmployeeNmr = worksheet.Cells[row, 7].Value?.ToString(),
-                        OptedOut = false
-                    };
-                    recipients.Add(recipient);
-                }
-            }
-
-            _context.Recipients.AddRange(recipients);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index), new { activeTab = "manage-recipients" });
         }
 
         public IActionResult CreateEmailTemplate()
@@ -231,7 +183,6 @@ namespace Tengella.Survey.WebApp.Controllers
             return RedirectToAction(nameof(Index), new { activeTab = "manage-templates" });
         }
 
-
         public async Task<IActionResult> RecipientDetails(int id)
         {
             var recipient = await _context.Recipients.FindAsync(id);
@@ -256,7 +207,6 @@ namespace Tengella.Survey.WebApp.Controllers
             return PartialView("_RecipientDetails", model);
         }
 
-
         [HttpGet]
         public async Task<IActionResult> OptOut(string email)
         {
@@ -267,7 +217,50 @@ namespace Tengella.Survey.WebApp.Controllers
             }
             recipient.OptedOut = true;
             await _context.SaveChangesAsync();
-            return Content("You have successfully opted out.");
+            return Content("Du är nu avregistrerad och kommer inte att få några mer mejl.");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadRecipients(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                TempData["ErrorMessage"] = "Vänligen välj en giltlig fil.";
+                return RedirectToAction(nameof(Index), new { activeTab = "manage-recipients" });
+            }
+
+            var recipients = new List<Recipient>();
+
+            await using (var stream = new MemoryStream())
+            {
+                await file.CopyToAsync(stream);
+                stream.Position = 0;
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+                using var package = new ExcelPackage(stream);
+                var worksheet = package.Workbook.Worksheets.First();
+                var rowCount = worksheet.Dimension.Rows;
+
+                for (int row = 2; row <= rowCount; row++)
+                {
+                    var recipient = new Recipient
+                    {
+                        Email = worksheet.Cells[row, 1].Value?.ToString() ?? string.Empty,
+                        Name = worksheet.Cells[row, 2].Value?.ToString() ?? string.Empty,
+                        Type = worksheet.Cells[row, 3].Value?.ToString() ?? string.Empty,
+                        PersonNmr = worksheet.Cells[row, 4].Value?.ToString(),
+                        OrgNmr = worksheet.Cells[row, 5].Value?.ToString(),
+                        CustomerNmr = worksheet.Cells[row, 6].Value?.ToString(),
+                        EmployeeNmr = worksheet.Cells[row, 7].Value?.ToString(),
+                        OptedOut = false
+                    };
+                    recipients.Add(recipient);
+                }
+            }
+
+            _context.Recipients.AddRange(recipients);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index), new { activeTab = "manage-recipients" });
         }
     }
 }

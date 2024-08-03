@@ -5,10 +5,10 @@ using Tengella.Survey.WebApp.Models;
 
 namespace Tengella.Survey.WebApp.Controllers
 {
-    public class SurveyAnalysisController(IAnalysisService analysisService, ISurveyService surveyService) : Controller
+    public class SurveyAnalysisController(IAnalysisService analysisService) : Controller
     {
         private readonly IAnalysisService _analysisService = analysisService;
-        private readonly ISurveyService _surveyService = surveyService;
+
         public async Task<IActionResult> SurveyAnalysis(int id)
         {
             var analysis = await _analysisService.GetSurveyResponseAnalysisAsync(id);

@@ -20,7 +20,7 @@ namespace Tengella.Survey.WebApp.Controllers
 
             if (survey.ClosingDate < DateTime.Today)
             {
-                TempData["ErrorMessage"] = "This survey is closed and cannot be responded to.";
+                TempData["ErrorMessage"] = "Denna enkät är stängd och kan inte besvaras.";
                 return View("Error", new ErrorViewModel());
             }
             
@@ -41,20 +41,20 @@ namespace Tengella.Survey.WebApp.Controllers
 
             if (survey.ClosingDate < DateTime.Today)
             {
-                TempData["ErrorMessage"] = "This survey is closed and cannot be responded to.";
+                TempData["ErrorMessage"] = "Denna enkät är stängd och kan inte besvaras.";
                 return View("Error", new ErrorViewModel());
             }
 
             var responses = await _responseService.CreateResponsesAsync(survey, form);
             if (!responses.Any())
             {
-                TempData["ErrorMessage"] = "Your response is empty. Please fill out the survey before submitting.";
+                TempData["ErrorMessage"] = "Du kan inte skicka in en enkät utan några svar.";
                 return View(survey);
             }
 
             _logger.LogInformation("Responses: {Response}", responses.ToString());
             await _responseService.SaveResponsesAsync(responses);
-            TempData["SuccessMessage"] = "Thank you for your response!";
+            TempData["SuccessMessage"] = "Tack för dina svar!";
 
             return RedirectToAction(nameof(Index), "Home");
         }
