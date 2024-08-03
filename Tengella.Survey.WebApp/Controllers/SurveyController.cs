@@ -13,8 +13,17 @@ namespace Tengella.Survey.WebApp.Controllers
         private readonly ISurveyService _surveyService = surveyService;
 
         // GET: Survey/CreateSurvey/5
-        public async Task<IActionResult> CreateSurvey(int? id)
+        public async Task<IActionResult> CreateSurvey(int? id, bool fromHomePage = false)
         {
+            if (fromHomePage)
+            {
+                HttpContext.Session.Remove("SurveyPreview");
+                HttpContext.Session.Remove("QuestionsToRemove");
+                HttpContext.Session.Remove("OptionsToRemove");
+
+                return View(new SurveyFormViewModel());
+            }
+
             SurveyFormViewModel? surveyViewModel;
 
             if (id == null && HttpContext.Session.TryGetValue("SurveyPreview", out byte[]? surveyData))
@@ -22,11 +31,6 @@ namespace Tengella.Survey.WebApp.Controllers
                 var surveyJson = Encoding.UTF8.GetString(surveyData);
                 surveyViewModel = JsonConvert.DeserializeObject<SurveyFormViewModel>(surveyJson) ?? new SurveyFormViewModel();
                 return View(surveyViewModel);
-            }
-
-            if (id == null)
-            {
-                return View(new SurveyFormViewModel());
             }
 
             var survey = await _surveyService.GetSurveyByIdAsync(id.Value);

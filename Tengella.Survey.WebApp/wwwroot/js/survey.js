@@ -1,4 +1,4 @@
-$(function () {
+ï»¿$(function () {
     let questionsToRemove = [];
     let optionsToRemove = [];
     $('#previewSurveyBtn').on('click', function () {
@@ -12,13 +12,6 @@ $(function () {
         }
     });
 
-    $.validator.addMethod('optionscount', function (value, element) {
-        const questionType = $(element).closest('.question-card').find('.question-type').val();
-        if (questionType === 'Open') return true;
-        const optionsCount = $(element).closest('.question-card').find('.options-container .input-group').length;
-        return optionsCount >= 2 && optionsCount <= 10;
-    }, "Varje fråga måste ha mellan 2 - 10 alternativ.");
-
     $('#surveyForm').validate({
         rules: {
             'Name': { required: true, maxlength: 100 },
@@ -26,20 +19,9 @@ $(function () {
             'ClosingDate': { required: true, date: true }
         },
         messages: {
-            'Name': { required: "Enkätnamn är obligatoriskt", maxlength: "Enkätnamn får inte överstiga 100 tecken" },
-            'Type': { required: "Enkättyp är obligatorisk", maxlength: "Enkättyp får inte överstiga 50 tecken" },
-            'ClosingDate': { required: "Sista datum är obligatoriskt", date: "Ange ett giltligt datum" }
-        },
-        errorElement: 'div',
-        errorClass: 'text-danger'
-    });
-
-    $('#responseForm').validate({
-        rules: {
-            'Answer': { required: true, maxlength: 350 },
-        },
-        messages: {
-            'Answer': { required: "Enkätsvar är obligatoriskt", maxlength: "Enkätsvar får inte överstiga 350 tecken" }
+            'Name': { required: "EnkÃ¤tnamn Ã¤r obligatoriskt", maxlength: "EnkÃ¤tnamn fÃ¥r inte Ã¶verstiga 100 tecken" },
+            'Type': { required: "EnkÃ¤ttyp Ã¤r obligatorisk", maxlength: "EnkÃ¤ttyp fÃ¥r inte Ã¶verstiga 50 tecken" },
+            'ClosingDate': { required: "Sista datum Ã¤r obligatoriskt", date: "Ange ett giltligt datum" }
         },
         errorElement: 'div',
         errorClass: 'text-danger'
@@ -49,16 +31,13 @@ $(function () {
         let valid = true;
         $('.question-card').each(function () {
             const questionType = $(this).find('.question-type').val();
-            if (questionType === 'Open') {
-                $(this).find('.options-error').remove();
-                return true;
-            }
             const optionsCount = $(this).find('.options-container .input-group').length;
             const errorContainer = $(this).find('.options-container').next('.options-error');
-            if (optionsCount < 2 || optionsCount > 10) {
+
+            if (questionType !== 'Open' && (optionsCount < 2 || optionsCount > 10)) {
                 valid = false;
                 if (!errorContainer.length) {
-                    $(this).find('.options-container').after('<div class="options-error text-danger">Varje fråga måste ha mellan 2 - 10 alternativ.</div>');
+                    $(this).find('.options-container').after('<div class="options-error text-danger">Varje frÃ¥ga mÃ¥ste ha mellan 2 - 10 alternativ.</div>');
                 }
             } else {
                 errorContainer.remove();
@@ -87,22 +66,22 @@ $(function () {
             <div class="card mb-3 question-card" id="question-${questionCount}">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h6 class="card-title" data-question-index="${questionCount}">Fråga ${questionCount + 1}</h6>
+                        <h6 class="card-title" data-question-index="${questionCount}">FrÃ¥ga ${questionCount + 1}</h6>
                         <button type="button" class="btn-close remove-question-btn" aria-label="Close" data-question-index="${questionCount}"></button>
                     </div>
                     <div class="question-content mt-3">
                         <div class="form-group">
                             <input type="hidden" name="Questions[${questionCount}].QuestionId" value="0" />
-                            <input name="Questions[${questionCount}].Text" class="form-control question-text" placeholder="Ange frågetext" />
+                            <input name="Questions[${questionCount}].Text" class="form-control question-text" placeholder="Ange frÃ¥getext" />
                         </div>
                         <div class="form-group mt-3">
                             <select name="Questions[${questionCount}].Type" class="form-control question-type" data-question-index="${questionCount}">
-                                <option value="Radio">Flervalsfråga</option>
+                                <option value="Radio">FlervalsfrÃ¥ga</option>
                                 <option value="Open">Kort svar</option>
                             </select>
                         </div>
                         <div class="options-container mt-3"></div>
-                        <button type="button" class="btn btn-link add-option-btn mt-3" data-question-index="${questionCount}" style="display:none;">Lägg till alternativ</button>
+                        <button type="button" class="btn btn-link add-option-btn mt-3" data-question-index="${questionCount}" style="display:none;">LÃ¤gg till alternativ</button>
                     </div>
                 </div>
             </div>
