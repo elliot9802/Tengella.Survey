@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Respond to Survey";
     var errorMessage = TempData["ErrorMessage"] as string;
+    var cachedResponses = ViewBag.CachedResponses as List<Response> ?? [];
 }
 
 <div id="respondSurvey">
@@ -41,6 +42,8 @@
                 @foreach (var question in Model.Questions)
                 {
                     var questionIndex = Model.Questions.ToList().IndexOf(question);
+                    var cachedResponse = cachedResponses.FirstOrDefault(r => r.QuestionId == question.QuestionId);
+
                     <div class="card mb-3 question-card" id="question-@(questionIndex)">
                         <div class="card-body">
                             <h6 class="card-title">@question.Text</h6>
@@ -51,7 +54,7 @@
                                         @foreach (var option in question.Options)
                                         {
                                             <div class="form-check">
-                                                <input class="form-check-input" type="radio" name="Questions[@questionIndex].Options" id="option-@(option.OptionId)" value="@option.OptionId">
+                                                <input class="form-check-input" type="radio" name="Questions[@questionIndex].Options" id="option-@(option.OptionId)" value="@option.OptionId" @(cachedResponse?.OptionId == option.OptionId ? "checked" : "")>
                                                 <label class="form-check-label" for="option-@(option.OptionId)">
                                                     @option.Text
                                                 </label>
@@ -60,7 +63,7 @@
                                     }
                                     else if (question.Type == "Open")
                                     {
-                                        <textarea name="Questions[@questionIndex].Response" class="form-control" placeholder="Enter your answer" maxlength="350"></textarea>
+                                        <textarea name="Questions[@questionIndex].Response" class="form-control" placeholder="Skriv ditt svar" maxlength="350">@cachedResponse?.TextResponse</textarea>
                                     }
                                 </div>
                             </div>

@@ -1,6 +1,5 @@
 ﻿using Tengella.Survey.Data.Models;
-using static Tengella.Survey.Business.Services.EmailService;
-
+using Tengella.Survey.Business.DTOs;
 namespace Tengella.Survey.Business.Interfaces
 {
     public interface IEmailService

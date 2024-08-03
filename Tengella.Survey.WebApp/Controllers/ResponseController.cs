@@ -23,6 +23,10 @@ namespace Tengella.Survey.WebApp.Controllers
                 TempData["ErrorMessage"] = "This survey is closed and cannot be responded to.";
                 return View("Error", new ErrorViewModel());
             }
+            
+            var cachedResponses = _responseService.GetCachedResponses(survey.SurveyFormId);
+            ViewBag.CachedResponses = cachedResponses;
+
             return View(survey);
         }
 

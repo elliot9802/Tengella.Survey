@@ -1,14 +1,16 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 using Tengella.Survey.Business.Interfaces;
 using Tengella.Survey.Data;
 using Tengella.Survey.Data.Models;
 
 namespace Tengella.Survey.Business.Services
 {
-    public class ResponseService(SurveyDbContext context, IAnalysisService analysisService) : IResponseService
+    public class ResponseService(SurveyDbContext context, IAnalysisService analysisService, IHttpContextAccessor httpContext) : IResponseService
     {
         private readonly SurveyDbContext _context = context;
         private readonly IAnalysisService _analysisService = analysisService;
+        private readonly IHttpContextAccessor _httpContext = httpContext;
 
         public Task<IEnumerable<Response>> CreateResponsesAsync(SurveyForm survey, IFormCollection form)
         {
@@ -58,7 +60,22 @@ namespace Tengella.Survey.Business.Services
                 }
             }
 
+            var sessionKey = $"Survey_{survey.SurveyFormId}_Responses";
+            var sessionResponses = JsonConvert.SerializeObject(responses);
+            _httpContext.HttpContext.Session.SetString(sessionKey, sessionResponses);
+
             return Task.FromResult((IEnumerable<Response>)responses);
+        }
+
+        public IEnumerable<Response> GetCachedResponses(int surveyFormId)
+        {
+            var sessionKey = $"Survey_{surveyFormId}_Responses";
+            var sessionData = _httpContext.HttpContext.Session.GetString(sessionKey);
+            if (sessionData != null)
+            {
+                return JsonConvert.DeserializeObject<List<Response>>(sessionData);
+            }
+            return [];
         }
 
         public async Task SaveResponsesAsync(IEnumerable<Response> responses)

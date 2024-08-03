@@ -16,6 +16,7 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<ISurveyService, SurveyService>();
 builder.Services.AddScoped<IResponseService, ResponseService>();
