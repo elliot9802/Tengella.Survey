@@ -167,42 +167,5 @@ namespace Tengella.Survey.Business.Services
                 .OrderByDescending(l => l.Count)
                 .ToListAsync();
         }
-
-        public async Task<QuestionTrendAnalysis> GetQuestionTrendAnalysisAsync(int questionId)
-        {
-            var questionsResponses = await _context.Questions
-                .Include(q => q.SurveyForm)
-                .Include(q => q.Responses)
-                .Where(q => q.QuestionId == questionId)
-                .ToListAsync();
-
-            return new QuestionTrendAnalysis
-            {
-                QuestionId = questionId,
-                Trends = questionsResponses
-                    .GroupBy(q => q.SurveyForm.Name)
-                    .Select(grp => new QuestionTrend
-                    {
-                        SurveyFormName = grp.Key,
-                        TotalResponses = grp.Sum(q => q.Responses.Count),
-                        AverageRating = grp.SelectMany(q => q.Responses)
-                            .Average(r => double.TryParse(r.TextResponse, out var val) ? val : 0)
-                    }).ToList()
-            };
-        }
     }
-
-    public class SurveyResponseAnalysis
-    {
-        public int SurveyFormId { get; set; }
-        public int ResponseCount { get; set; }
-        public int TotalResponses { get; set; }
-        public DateTime? LastResponseDate { get; set; }
-        public double ResponseRate { get; set; }
-        public Dictionary<string, int> QuestionResponseCounts { get; set; }
-        public Dictionary<string, double> OptionResponseRates { get; set; }
-        public Dictionary<string, int> OptionResponseCounts { get; set; }
-        public Dictionary<string, List<string>> ShortAnswerResponses { get; set; }
-    }
-
 }

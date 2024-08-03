@@ -1,5 +1,4 @@
 ﻿using Tengella.Survey.Business.DTOs;
-using Tengella.Survey.Business.Services;
 using Tengella.Survey.Data.Models;
 
 namespace Tengella.Survey.Business.Interfaces
@@ -13,7 +12,6 @@ namespace Tengella.Survey.Business.Interfaces
         Task LogSurveyResponseAsync(int surveyFormId, int responseCount);
         Task<SurveyResponseAnalysis> GetSurveyResponseAnalysisAsync(int surveyFormId);
         Task<List<AnalysisLog>> GetLogsByTypeAsync(string logType);
-        Task<QuestionTrendAnalysis> GetQuestionTrendAnalysisAsync(int questionId);
         Task<List<AnalysisLog>> GetEmailSendsAsync();
         Task<List<AnalysisLog>> GetSurveyCompletionsAsync();
         Task<List<AnalysisLog>> GetRepeatedQuestionsAsync();

@@ -1,4 +1,4 @@
-﻿using Tengella.Survey.Business.Services;
+﻿using Tengella.Survey.Business.DTOs;
 using Tengella.Survey.Data.Models;
 
 namespace Tengella.Survey.WebApp.Models

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Tengella.Survey.Business.DTOs;
 using Tengella.Survey.Business.Interfaces;
-using Tengella.Survey.Business.Services;
 using Tengella.Survey.WebApp.Models;
 
 namespace Tengella.Survey.WebApp.Controllers
@@ -45,11 +45,6 @@ namespace Tengella.Survey.WebApp.Controllers
             };
 
             return View(summary);
-        }
-        public async Task<IActionResult> QuestionTrendAnalysis(int id)
-        {
-            var trendAnalysis = await _analysisService.GetQuestionTrendAnalysisAsync(id);
-            return View(trendAnalysis);
         }
     }
 }
