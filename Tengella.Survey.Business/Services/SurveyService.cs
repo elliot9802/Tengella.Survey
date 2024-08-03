@@ -6,18 +6,11 @@ using Tengella.Survey.Data.Models;
 
 namespace Tengella.Survey.Business.Services
 {
-    public class SurveyService : ISurveyService
+    public class SurveyService(SurveyDbContext context, ILogger<SurveyService> logger, IAnalysisService analysisService) : ISurveyService
     {
-        private readonly SurveyDbContext _context;
-        private readonly ILogger<SurveyService> _logger;
-        private readonly IAnalysisService _analysisService;
-
-        public SurveyService(SurveyDbContext context, ILogger<SurveyService> logger, IAnalysisService analysisService)
-        {
-            _context = context;
-            _logger = logger;
-            _analysisService = analysisService;
-        }
+        private readonly SurveyDbContext _context = context;
+        private readonly ILogger<SurveyService> _logger = logger;
+        private readonly IAnalysisService _analysisService = analysisService;
 
         public async Task<IEnumerable<SurveyForm>> GetSurveysAsync()
         {

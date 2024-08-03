@@ -2,10 +2,19 @@
 
 @{
     ViewData["Title"] = "Respond to Survey";
+    var errorMessage = TempData["ErrorMessage"] as string;
 }
 
 <div id="respondSurvey">
     <h1>@ViewData["Title"]</h1>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> @errorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
     <form asp-action="RespondSurvey" method="post" id="responseForm">
         <input type="hidden" asp-for="SurveyFormId" />
@@ -66,6 +75,5 @@
 </div>
 
 @section Scripts {
-    <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+    @await Html.PartialAsync("_ValidationScriptsPartial")
 }

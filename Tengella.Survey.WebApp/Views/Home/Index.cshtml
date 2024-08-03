@@ -10,21 +10,17 @@
     <div class="row mb-4">
         @if (!string.IsNullOrEmpty(errorMessage))
         {
-            <div class="col-12">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    @errorMessage
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle"></i> @errorMessage
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         }
 
         @if (!string.IsNullOrEmpty(successMessage))
         {
-            <div class="col-12">
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    @successMessage
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle"></i> @successMessage
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         }
     </div>
@@ -84,7 +80,7 @@
                         </ul>
                     </div>
                     <div class="card-footer d-flex justify-content-around">
-                        <a href="@Url.Action("RespondSurvey", "Response", new { id = survey.SurveyFormId })"
+                        <a href="@Url.Action("CheckSurvey", "Home", new { id = survey.SurveyFormId })"
                            title="Take Survey"
                            class="btn btn-link @(survey.ClosingDate < DateTime.Today ? "text-muted" : "")">
                             <i class="fas fa-reply"></i>

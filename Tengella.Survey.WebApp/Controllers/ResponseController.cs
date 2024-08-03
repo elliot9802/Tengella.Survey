@@ -35,12 +35,19 @@ namespace Tengella.Survey.WebApp.Controllers
                 return NotFound();
             }
 
-            var responses = await _responseService.CreateResponsesAsync(survey, form);
-            if (!responses.Any())
+            if (survey.ClosingDate < DateTime.Today)
             {
                 TempData["ErrorMessage"] = "This survey is closed and cannot be responded to.";
                 return View("Error", new ErrorViewModel());
             }
+
+            var responses = await _responseService.CreateResponsesAsync(survey, form);
+            if (!responses.Any())
+            {
+                TempData["ErrorMessage"] = "Your response is empty. Please fill out the survey before submitting.";
+                return View(survey);
+            }
+
             _logger.LogInformation("Responses: {Response}", responses.ToString());
             await _responseService.SaveResponsesAsync(responses);
             TempData["SuccessMessage"] = "Thank you for your response!";

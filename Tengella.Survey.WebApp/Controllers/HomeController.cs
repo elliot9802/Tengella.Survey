@@ -7,17 +7,35 @@ namespace WebApp.Controllers
 {
     public class HomeController(ISurveyService surveyService) : Controller
     {
-    private readonly ISurveyService _surveyService = surveyService;
+        private readonly ISurveyService _surveyService = surveyService;
 
-    // GET: Home/Index
-    public async Task<IActionResult> Index()
-    {
-        var surveys = await _surveyService.GetSurveysAsync();
-        return View(surveys);
-    }
+        // GET: Home/Index
+        public async Task<IActionResult> Index()
+        {
+            var surveys = await _surveyService.GetSurveysAsync();
+            return View(surveys);
+        }
 
+        [HttpGet]
+        public async Task<IActionResult> CheckSurvey(int id)
+        {
+            var survey = await _surveyService.GetSurveyByIdAsync(id);
+            if (survey == null)
+            {
+                TempData["ErrorMessage"] = "The survey does not exist.";
+                return RedirectToAction("Index");
+            }
 
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+            if (survey.ClosingDate < DateTime.Today)
+            {
+                TempData["ErrorMessage"] = "This survey is closed and cannot be responded to.";
+                return RedirectToAction("Index");
+            }
+
+            return RedirectToAction("RespondSurvey", "Response", new { id });
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
