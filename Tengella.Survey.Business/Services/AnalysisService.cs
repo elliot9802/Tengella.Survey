@@ -99,9 +99,18 @@ namespace Tengella.Survey.Business.Services
 
             if (survey == null) return null;
 
+            var emailSentLog = await _context.AnalysisLogs
+                .Where(log => log.EntityId == surveyFormId && log.LogType == "SurveyEmailSent")
+                .SumAsync(log => log.Count);
+
+            var responseLog = await _context.AnalysisLogs
+                .Where(log => log.EntityId == surveyFormId && log.LogType == "SurveyResponse")
+                .SumAsync(log => log.Count);
+
             var totalResponses = survey.Questions.Sum(q => q.Responses.Count);
             var totalRespondents = survey.Questions.SelectMany(q => q.Responses).Select(r => r.ResponseGroupId).Distinct().Count();
-            var responseRate = (double)totalRespondents / totalRespondents;
+
+            var responseRate = emailSentLog > 0 ? (double)responseLog / emailSentLog : 0.0;
 
             var questionResponseCounts = survey.Questions.ToDictionary(
                 q => q.Text,
@@ -142,7 +151,6 @@ namespace Tengella.Survey.Business.Services
                 ShortAnswerResponses = shortAnswerResponses
             };
         }
-
 
         public async Task<List<AnalysisLog>> GetRepeatedQuestionsAsync()
         {

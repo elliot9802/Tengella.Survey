@@ -96,15 +96,8 @@ namespace Tengella.Survey.Business.Services
             {
                 Success = failedRecipients.Count == 0,
                 FailedRecipients = failedRecipients,
-                ErrorMessage = failedRecipients.Count > 0 ? "Some emails failed to send." : string.Empty
+                ErrorMessage = failedRecipients.Count > 0 ? "Visa e-postmeddelanden gick inte att skicka." : string.Empty
             };
             }
-
-        public class EmailSendResult
-        {
-            public bool Success { get; set; }
-            public List<string> FailedRecipients { get; set; } = [];
-            public string ErrorMessage { get; set; } = string.Empty;
-        }
     }
 }

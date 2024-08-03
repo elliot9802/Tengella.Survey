@@ -5,8 +5,6 @@
 }
 
 <div class="container mt-4">
-    <h1 class="text-center">Enkätanalys för Enkät ID: @Model.SurveyFormId</h1>
-
     <div class="row mb-4">
         <div class="col text-center">
             <h2>Totalt antal svar: @Model.TotalResponses</h2>
@@ -53,11 +51,12 @@
                             </div>
                             <script>
                                 document.addEventListener('DOMContentLoaded', function () {
-                                    var questionKey = '@question.Key.GetHashCode()';
-                                    var ctx = document.getElementById('chart-' + questionKey).getContext('2d');
-                                    var initialLabels = @Html.Raw(Json.Serialize(Model.OptionResponseRates.Where(o => o.Key.StartsWith(question.Key + "|")).Select(o => o.Key.Split('|')[1]).ToArray()));
-                                    var initialData = @Html.Raw(Json.Serialize(Model.OptionResponseRates.Where(o => o.Key.StartsWith(question.Key + "|")).Select(o => o.Value).ToArray()));
-                                    var chart = new Chart(ctx, {
+                                    const questionKey = '@question.Key.GetHashCode()';
+                                    const ctx = document.getElementById('chart-' + questionKey).getContext('2d');
+                                    const initialLabels = @Html.Raw(Json.Serialize(Model.OptionResponseRates.Where(o => o.Key.StartsWith(question.Key + "|")).Select(o => o.Key.Split('|')[1]).ToArray()));
+                                    const initialData = @Html.Raw(Json.Serialize(Model.OptionResponseRates.Where(o => o.Key.StartsWith(question.Key + "|")).Select(o => o.Value).ToArray()));
+
+                                    let chart = new Chart(ctx, {
                                         type: 'pie',
                                         data: {
                                             labels: initialLabels,
@@ -67,17 +66,28 @@
                                             }]
                                         }
                                     });
+
                                     document.getElementById('chartType-' + questionKey).addEventListener('change', function (event) {
-                                        var chartType = event.target.value;
+                                        const chartType = event.target.value;
+                                        const data = {
+                                            labels: initialLabels,
+                                            datasets: [{
+                                                label: 'Svar',
+                                                data: initialData,
+                                                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
+                                            }]
+                                        };
+
                                         chart.destroy();
                                         chart = new Chart(ctx, {
                                             type: chartType,
-                                            data: {
-                                                labels: initialLabels,
-                                                datasets: [{
-                                                    data: initialData,
-                                                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
-                                                }]
+                                            data: data,
+                                            options: {
+                                                scales: {
+                                                    y: {
+                                                        beginAtZero: true
+                                                    }
+                                                }
                                             }
                                         });
                                     });
@@ -87,17 +97,13 @@
                         else
                         {
                             <h5>Svar:</h5>
-                            <ul class="list-group" id="responses-@question.Key.GetHashCode()">
+                            <ul class="list-group" id="responses-@question.Key">
                                 @if (Model.ShortAnswerResponses.ContainsKey(question.Key))
                                 {
-                                    var responses = Model.ShortAnswerResponses[question.Key].Take(10).ToList();
+                                    var responses = Model.ShortAnswerResponses[question.Key].Take(5).ToList();
                                     foreach (var response in responses)
                                     {
                                         <li class="list-group-item">@response</li>
-                                    }
-                                    @if (Model.ShortAnswerResponses[question.Key].Count > 10)
-                                    {
-                                        <i class="fas fa-chevron-down show-more-icon" data-question-id="@question.Key.GetHashCode()"></i>
                                     }
                                 }
                                 else
@@ -105,7 +111,10 @@
                                     <li class="list-group-item">Inga svar tillgängliga.</li>
                                 }
                             </ul>
-                            <i class="fas fa-chevron-up minimize-icon d-none" data-question-id="@question.Key.GetHashCode()"></i>
+                            <div class="response-buttons mt-3">
+                                <i class="fas fa-chevron-down show-more-icon" data-question-id="@question.Key"></i>
+                                <i class="fas fa-chevron-up minimize-icon d-none" data-question-id="@question.Key"></i>
+                            </div>
                         }
                     </div>
                 </div>
