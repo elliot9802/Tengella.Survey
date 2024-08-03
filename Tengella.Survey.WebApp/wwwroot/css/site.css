@@ -63,6 +63,10 @@ main {
     font-size: 0.7rem;
 }
 
+.upload-recipients-btn {
+    font-size: 1.38rem;
+}
+
 .minimized {
     display: none;
 }

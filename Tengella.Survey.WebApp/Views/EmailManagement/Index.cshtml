@@ -81,12 +81,12 @@
                                     <div class="mb-3">
                                         <label for="file" class="form-label">
                                             Ladda upp mottagare CSV/Excel
-                                            <i class="fas fa-info-circle text-muted" title="Ladda upp en CSV- eller Excelfil som innehåller följande kolumner: E-post, Namn, Typ samt Person-, Organisations-, Kund- eller Anställningsnummer."></i>
+                                            <i class="fas fa-info-circle text-muted" title="Ladda upp en CSV- eller Excelfil som innehåller följande kolumner i denna ordning: E-post, Namn, Typ samt Person-, Organisations-, Kund- eller Anställningsnummer."></i>
                                         </label>
                                         <div class="input-group" style="max-width: 400px;">
-                                            <input type="file" name="file" class="form-control form-control-sm" required />
+                                            <input type="file" name="file" class="form-control form-control-sm" accept=".csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required />
                                             <div class="input-group-append">
-                                                <button type="submit" style="height: 100%;" class="btn btn-primary btn-sm">
+                                                <button type="submit" class="upload-recipients-btn btn btn-primary btn-sm">
                                                     <i class="fas fa-file-import"></i>
                                                 </button>
                                             </div>
@@ -100,39 +100,41 @@
                                     <button class="btn btn-danger btn-sm mb-3" id="deleteSelectedRecipients" disabled>
                                         <i class="fas fa-trash"></i> Ta bort valda
                                     </button>
-                                    <table class="table table-striped table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th><input type="checkbox" id="selectAllRecipients" /></th>
-                                                <th>E-post</th>
-                                                <th>Namn</th>
-                                                <th>Avregistrerad</th>
-                                                <th class="text-end">Åtgärder</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @if (allRecipients != null)
-                                            {
-                                                @foreach (var recipient in allRecipients)
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th><input type="checkbox" id="selectAllRecipients" /></th>
+                                                    <th>E-post</th>
+                                                    <th>Namn</th>
+                                                    <th>Avregistrerad</th>
+                                                    <th class="text-end">Åtgärder</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @if (allRecipients != null)
                                                 {
-                                                    <tr>
-                                                        <td><input type="checkbox" class="select-recipient" data-id="@recipient.RecipientId" /></td>
-                                                        <td>@recipient.Email</td>
-                                                        <td>@recipient.Name</td>
-                                                        <td>@recipient.OptedOut</td>
-                                                        <td class="text-end">
-                                                            <a class="btn btn-link p-0 me-2" data-bs-toggle="modal" data-bs-target="#recipientModal" title="Redigera mottagare" onclick="loadModal('Recipient', @recipient.RecipientId)">
-                                                                <i class="fas fa-edit link-dark"></i>
-                                                            </a>
-                                                            <a class="btn btn-link p-0 me-2" href="javascript:void(0);" title="Visa mottagare" onclick="loadDetailsModal(@recipient.RecipientId)">
-                                                                <i class="fas fa-eye link-dark"></i>
-                                                            </a>
-                                                        </td>
-                                                    </tr>
+                                                    @foreach (var recipient in allRecipients)
+                                                    {
+                                                        <tr>
+                                                            <td><input type="checkbox" class="select-recipient" data-id="@recipient.RecipientId" /></td>
+                                                            <td>@recipient.Email</td>
+                                                            <td>@recipient.Name</td>
+                                                            <td>@recipient.OptedOut</td>
+                                                            <td class="text-end">
+                                                                <a class="btn btn-link p-0 me-2" data-bs-toggle="modal" data-bs-target="#recipientModal" title="Redigera mottagare" onclick="loadModal('Recipient', @recipient.RecipientId)">
+                                                                    <i class="fas fa-edit link-dark"></i>
+                                                                </a>
+                                                                <a class="btn btn-link p-0 me-2" href="javascript:void(0);" title="Visa mottagare" onclick="loadDetailsModal(@recipient.RecipientId)">
+                                                                    <i class="fas fa-eye link-dark"></i>
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    }
                                                 }
-                                            }
-                                        </tbody>
-                                    </table>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -144,34 +146,36 @@
                                 <button class="btn btn-danger btn-sm mb-3" id="deleteSelectedTemplates" disabled>
                                     <i class="fas fa-trash"></i> Ta bort valda
                                 </button>
-                                <table class="table table-striped table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th><input type="checkbox" id="selectAllTemplates" /></th>
-                                            <th>Namn</th>
-                                            <th>Ämne</th>
-                                            <th class="text-end">Åtgärder</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @if (emailTemplates != null)
-                                        {
-                                            @foreach (var template in emailTemplates)
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th><input type="checkbox" id="selectAllTemplates" /></th>
+                                                <th>Namn</th>
+                                                <th>Ämne</th>
+                                                <th class="text-end">Åtgärder</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (emailTemplates != null)
                                             {
-                                                <tr>
-                                                    <td><input type="checkbox" class="select-template" data-id="@template.EmailTemplateId" /></td>
-                                                    <td>@template.Name</td>
-                                                    <td>@template.Subject</td>
-                                                    <td class="text-end">
-                                                        <a class="btn btn-link p-0 me-2" data-bs-toggle="modal" data-bs-target="#emailtemplateModal" title="Redigera mall" onclick="loadModal('EmailTemplate', @template.EmailTemplateId)">
-                                                            <i class="fas fa-edit link-dark"></i>
-                                                        </a>
-                                                    </td>
-                                                </tr>
+                                                @foreach (var template in emailTemplates)
+                                                {
+                                                    <tr>
+                                                        <td><input type="checkbox" class="select-template" data-id="@template.EmailTemplateId" /></td>
+                                                        <td>@template.Name</td>
+                                                        <td>@template.Subject</td>
+                                                        <td class="text-end">
+                                                            <a class="btn btn-link p-0 me-2" data-bs-toggle="modal" data-bs-target="#emailtemplateModal" title="Redigera mall" onclick="loadModal('EmailTemplate', @template.EmailTemplateId)">
+                                                                <i class="fas fa-edit link-dark"></i>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                }
                                             }
-                                        }
-                                    </tbody>
-                                </table>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -214,7 +218,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="recipientModalLabel">Recipient</h5>
+                    <h5 class="modal-title" id="recipientModalLabel">Mottagare</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body"></div>
