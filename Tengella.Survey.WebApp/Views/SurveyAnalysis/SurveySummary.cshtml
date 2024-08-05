@@ -8,13 +8,15 @@
     <h1 class="text-center">@ViewData["Title"]</h1>
 
     <h3>Alla enkäter</h3>
-    @if (Model.SurveyResponseAnalyses.Any())
+    @if (Model.SurveySummaryData.Any())
     {
         <div class="table-responsive">
             <table class="table table-striped table-hover">
                 <thead class="thead-dark">
                     <tr>
-                        <th>Enkät ID</th>
+                        <th>Enkät Namn</th>
+                        <th>Antal mottagare</th>
+                        <th>Antal slutföranden</th>
                         <th>Totalt antal svar</th>
                         <th>Svarsfrekvens</th>
                         <th>Senaste svarsdatum</th>
@@ -22,15 +24,17 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var analysis in Model.SurveyResponseAnalyses)
+                    @foreach (var data in Model.SurveySummaryData)
                     {
                         <tr>
-                            <td>@analysis.SurveyFormId</td>
-                            <td>@analysis.TotalResponses</td>
-                            <td>@analysis.ResponseRate.ToString("P")</td>
-                            <td>@analysis.LastResponseDate?.ToString("g")</td>
+                            <td>@data.SurveyName</td>
+                            <td>@data.EmailSends</td>
+                            <td>@data.SurveyCompletions</td>
+                            <td>@data.TotalResponses</td>
+                            <td>@data.ResponseRate.ToString("P")</td>
+                            <td>@data.LastResponseDate?.ToString("g")</td>
                             <td>
-                                <a href="@Url.Action("SurveyAnalysis", "SurveyAnalysis", new { id = analysis.SurveyFormId })" class="btn btn-primary">Visa analys</a>
+                                <a href="@Url.Action("SurveyAnalysis", "SurveyAnalysis", new { id = data.SurveyFormId })" class="btn btn-primary">Visa analys</a>
                             </td>
                         </tr>
                     }
@@ -61,6 +65,38 @@
                             <td>@log.EntityName</td>
                             <td>@log.Count</td>
                         </tr>
+                        <tr>
+                            <td colspan="2">
+                                @if (Model.RepeatedQuestionAnalyses.ContainsKey(log.EntityName))
+                                {
+                                    var analysis = Model.RepeatedQuestionAnalyses[log.EntityName];
+                                    <div>
+                                        <h4>Alternativ Svarsfrekvens</h4>
+                                        <ul class="list-group">
+                                            @foreach (var option in analysis.OptionResponseCounts)
+                                            {
+                                                <li class="list-group-item">
+                                                    @option.OptionText: @option.Count svar
+                                                </li>
+                                            }
+                                        </ul>
+                                        <h4>Öppna Svar</h4>
+                                        <ul class="list-group">
+                                            @foreach (var response in analysis.OpenResponses)
+                                            {
+                                                <li class="list-group-item">
+                                                    @response
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p>Ingen detaljerad analys tillgänglig.</p>
+                                }
+                            </td>
+                        </tr>
                     }
                 </tbody>
             </table>
@@ -69,61 +105,5 @@
     else
     {
         <p>Inga upprepade frågor hittades.</p>
-    }
-
-    <h3>Slutförda enkäter</h3>
-    @if (Model.SurveyCompletions.Any())
-    {
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Enkät</th>
-                        <th>Antal slutföranden</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var log in Model.SurveyCompletions)
-                    {
-                        <tr>
-                            <td>@log.EntityName</td>
-                            <td>@log.Count</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
-    else
-    {
-        <p>Inga slutförda enkäter hittades.</p>
-    }
-
-    <h3>Skickade e-postmeddelanden</h3>
-    @if (Model.EmailSends.Any())
-    {
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Enkät</th>
-                        <th>Antal mottagare</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var log in Model.EmailSends)
-                    {
-                        <tr>
-                            <td>@log.EntityName</td>
-                            <td>@log.Count</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
-    else
-    {
-        <p>Inga skickade e-postmeddelanden hittades.</p>
     }
 </div>

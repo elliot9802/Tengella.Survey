@@ -2,7 +2,7 @@
 
 namespace Tengella.Survey.Data.Models
 {
-    public class Recipient
+    public class Recipient : IValidatableObject
     {
         public int RecipientId { get; set; }
 
@@ -21,5 +21,15 @@ namespace Tengella.Survey.Data.Models
         public string? CustomerNmr { get; set; }
         public string? EmployeeNmr { get; set; }
         public bool OptedOut { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (Type == "Företag" && string.IsNullOrEmpty(OrgNmr))
+            {
+                yield return new ValidationResult(
+                    "Organisationsnummer is required when Type is Företag.",
+                    new[] { nameof(OrgNmr) });
+            }
+        }
     }
 }

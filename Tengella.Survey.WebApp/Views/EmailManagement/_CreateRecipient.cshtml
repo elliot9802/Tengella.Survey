@@ -17,6 +17,7 @@
     <div class="form-group">
         <label>Namn</label>
         <input asp-for="Name" class="form-control" required />
+        <span asp-validation-for="Name" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label>Typ</label>
@@ -26,22 +27,27 @@
             <option value="Företag">Företag</option>
             <option value="Offentlig verksamhet">Offentlig verksamhet</option>
         </select>
+        <span asp-validation-for="Type" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label>Personnummer</label>
         <input asp-for="PersonNmr" class="form-control" />
+        <span asp-validation-for="PersonNmr" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label>Organisationsnummer</label>
         <input asp-for="OrgNmr" class="form-control" />
+        <span asp-validation-for="OrgNmr" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label>Kundnummer</label>
         <input asp-for="CustomerNmr" class="form-control" />
+        <span asp-validation-for="CustomerNmr" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label>Anställningsnummer</label>
         <input asp-for="EmployeeNmr" class="form-control" />
+        <span asp-validation-for="EmployeeNmr" class="text-danger"></span>
     </div>
     <button type="submit" class="btn btn-primary mt-3">@((isEdit ? "Uppdatera" : "Skapa"))</button>
 </form>

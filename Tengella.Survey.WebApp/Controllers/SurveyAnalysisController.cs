@@ -36,12 +36,33 @@ namespace Tengella.Survey.WebApp.Controllers
                 }
             }
 
+            var surveySummaryData = surveyResponseAnalyses.Select(analysis => new SurveySummaryData
+            {
+                SurveyFormId = analysis.SurveyFormId,
+                SurveyName = analysis.SurveyName,
+                TotalResponses = analysis.TotalResponses,
+                ResponseRate = analysis.ResponseRate,
+                LastResponseDate = analysis.LastResponseDate,
+                EmailSends = emailSends.FirstOrDefault(e => e.EntityId == analysis.SurveyFormId)?.Count ?? 0,
+                SurveyCompletions = surveyCompletions.FirstOrDefault(c => c.EntityId == analysis.SurveyFormId)?.Count ?? 0
+            }).ToList();
+
+            var repeatedQuestionAnalyses = new Dictionary<string, RepeatedQuestionAnalysis>();
+            foreach (var repeatedQuestion in repeatedQuestions)
+            {
+                var analysis = await _analysisService.GetRepeatedQuestionAnalysisAsync(repeatedQuestion.EntityName);
+                if (analysis != null)
+                {
+                    repeatedQuestionAnalyses.Add(repeatedQuestion.EntityName, analysis);
+                }
+            }
+
             var summary = new SurveySummaryViewModel
             {
                 RepeatedQuestions = repeatedQuestions,
-                SurveyCompletions = surveyCompletions,
-                EmailSends = emailSends,
-                SurveyResponseAnalyses = surveyResponseAnalyses
+                SurveySummaryData = surveySummaryData,
+                SurveyResponseAnalyses = surveyResponseAnalyses,
+                RepeatedQuestionAnalyses = repeatedQuestionAnalyses
             };
 
             return View(summary);

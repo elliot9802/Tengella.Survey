@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
+using System.ComponentModel.DataAnnotations;
 using Tengella.Survey.Business.Interfaces;
 using Tengella.Survey.Data;
 using Tengella.Survey.Data.Models;
@@ -20,6 +21,7 @@ namespace Tengella.Survey.WebApp.Controllers
             var emailTemplates = await _emailService.GetEmailTemplatesAsync();
             var recipients = await _emailService.GetRecipientsAsync();
             var surveys = await _surveyService.GetSurveysAsync();
+            var distributionLists = await _context.DistributionLists.Include(dl => dl.Recipients).ToListAsync();
 
             ViewBag.EmailTemplates = emailTemplates.ConvertAll(et => new EmailTemplateViewModel
             {
@@ -52,6 +54,7 @@ namespace Tengella.Survey.WebApp.Controllers
                     Name = r.Name
                 }).ToList();
 
+            ViewBag.DistributionLists = distributionLists.Select(dl => new SelectListItem { Value = dl.DistributionListId.ToString(), Text = dl.Name }).ToList();
             ViewBag.Surveys = surveys.Select(s => new SelectListItem { Value = s.SurveyFormId.ToString(), Text = s.Name }).ToList();
 
             return View(new SendEmailViewModel());
@@ -63,7 +66,11 @@ namespace Tengella.Survey.WebApp.Controllers
             if (ModelState.IsValid)
             {
                 var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
-                var result = await _emailService.SendSurveyEmailsAsync(model.TemplateId, model.RecipientIds, model.SurveyFormId, baseUrl);
+                var recipientIds = model.DistributionListId.HasValue
+                    ? _context.DistributionLists.Include(dl => dl.Recipients).First(dl => dl.DistributionListId == model.DistributionListId.Value).Recipients.ConvertAll(r => r.RecipientId)
+                    : model.RecipientIds;
+
+                var result = await _emailService.SendSurveyEmailsAsync(model.TemplateId, recipientIds, model.SurveyFormId, baseUrl);
 
                 if (result.Success)
                 {
@@ -78,6 +85,30 @@ namespace Tengella.Survey.WebApp.Controllers
             }
 
             TempData["ErrorMessage"] = "Misslyckades med att skicka e-postmeddelanden. Vänligen dubbelkolla inmatning.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveDistributionList(string listName, List<int> recipientIds)
+        {
+            if (string.IsNullOrWhiteSpace(listName) || recipientIds?.Any() != true)
+            {
+                TempData["ErrorMessage"] = "Ogiltigt namn eller mottagare för distributionslistan.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var recipients = await _context.Recipients.Where(r => recipientIds.Contains(r.RecipientId)).ToListAsync();
+
+            var distributionList = new DistributionList
+            {
+                Name = listName,
+                Recipients = recipients
+            };
+
+            _context.DistributionLists.Add(distributionList);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Distributionslistan sparades!";
             return RedirectToAction(nameof(Index));
         }
 
@@ -132,7 +163,7 @@ namespace Tengella.Survey.WebApp.Controllers
             {
                 _context.EmailTemplates.Add(emailTemplate);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index), new { activeTab = "manage-tempaltes" });
+                return RedirectToAction(nameof(Index), new { activeTab = "manage-templates" });
             }
             return PartialView("_CreateEmailTemplate", emailTemplate);
         }
@@ -154,7 +185,7 @@ namespace Tengella.Survey.WebApp.Controllers
             {
                 _context.EmailTemplates.Update(emailTemplate);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index), new { activeTab = "manage-tempaltes" });
+                return RedirectToAction(nameof(Index), new { activeTab = "manage-templates" });
             }
             return PartialView("_CreateEmailTemplate", emailTemplate);
         }
@@ -230,6 +261,7 @@ namespace Tengella.Survey.WebApp.Controllers
             }
 
             var recipients = new List<Recipient>();
+            var validationErrors = new List<string>();
 
             await using (var stream = new MemoryStream())
             {
@@ -253,10 +285,29 @@ namespace Tengella.Survey.WebApp.Controllers
                         EmployeeNmr = worksheet.Cells[row, 7].Value?.ToString(),
                         OptedOut = false
                     };
-                    recipients.Add(recipient);
+
+                    var validationContext = new ValidationContext(recipient);
+                    var validationResults = new List<ValidationResult>();
+
+                    if (!Validator.TryValidateObject(recipient, validationContext, validationResults, true))
+                    {
+                        foreach (var validationResult in validationResults)
+                        {
+                            validationErrors.Add($"Row {row}: {validationResult.ErrorMessage}");
+                        }
+                    }
+                    else
+                    {
+                        recipients.Add(recipient);
+                    }
                 }
             }
 
+            if (validationErrors.Any())
+            {
+                TempData["ErrorMessage"] = "Följande fel uppstod vid importering av mottagare: " + string.Join(", ", validationErrors);
+                return RedirectToAction(nameof(Index), new { activeTab = "manage-recipients" });
+            }
             _context.Recipients.AddRange(recipients);
             await _context.SaveChangesAsync();
 

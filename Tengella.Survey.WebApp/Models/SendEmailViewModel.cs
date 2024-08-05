@@ -5,5 +5,6 @@
         public int TemplateId { get; set; }
         public List<int> RecipientIds { get; set; } = [];
         public int SurveyFormId { get; set; }
+        public int? DistributionListId { get; set; }
     }
 }

@@ -3,6 +3,7 @@
     public class SurveyResponseAnalysis
     {
         public int SurveyFormId { get; set; }
+        public string SurveyName { get; set; }
         public int TotalResponses { get; set; }
         public DateTime? LastResponseDate { get; set; }
         public double ResponseRate { get; set; }

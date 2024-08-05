@@ -142,6 +142,7 @@ namespace Tengella.Survey.Business.Services
             return new SurveyResponseAnalysis
             {
                 SurveyFormId = surveyFormId,
+                SurveyName = survey.Name,
                 TotalResponses = totalResponses,
                 LastResponseDate = survey.Questions.SelectMany(q => q.Responses).Max(r => (DateTime?)r.ResponseDate),
                 ResponseRate = responseRate,
@@ -149,6 +150,42 @@ namespace Tengella.Survey.Business.Services
                 OptionResponseRates = optionResponseRates.ToDictionary(k => k.Key, v => v.Value.Rate),
                 OptionResponseCounts = optionResponseRates.ToDictionary(k => k.Key, v => v.Value.Count),
                 ShortAnswerResponses = shortAnswerResponses
+            };
+        }
+
+        public async Task<RepeatedQuestionAnalysis> GetRepeatedQuestionAnalysisAsync(string questionText)
+        {
+            var questions = await _context.Questions
+                .Include(q => q.Options)
+                .Include(q => q.Responses)
+                .ThenInclude(r => r.Option)
+                .Where(q => q.Text == questionText)
+                .ToListAsync();
+
+            if (!questions.Any()) return null;
+
+            var optionResponseCounts = questions
+                .SelectMany(q => q.Responses)
+                .Where(r => r.OptionId != null)
+                .GroupBy(r => r.Option.Text)
+                .Select(g => new OptionResponseCount
+                {
+                    OptionText = g.Key,
+                    Count = g.Count()
+                })
+                .ToList();
+
+            var openResponses = questions
+                .Where(q => q.Type == "Open")
+                .SelectMany(q => q.Responses)
+                .Select(r => r.TextResponse)
+                .ToList();
+
+            return new RepeatedQuestionAnalysis
+            {
+                QuestionText = questionText,
+                OptionResponseCounts = optionResponseCounts,
+                OpenResponses = openResponses
             };
         }
 

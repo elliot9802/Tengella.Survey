@@ -4,7 +4,12 @@ $(document).ready(function () {
     const $deleteSelectedRecipientsButton = $('#deleteSelectedRecipients');
     const $deleteSelectedTemplatesButton = $('#deleteSelectedTemplates');
 
-    const validateForm = () => $button.prop('disabled', !$form[0].checkValidity());
+    const validateForm = () => {
+        const distributionListSelected = document.getElementById('distributionListId').value;
+        const recipientsSelected = document.getElementById('recipientIds').selectedOptions.length > 0;
+        const isValid = distributionListSelected || recipientsSelected;
+        $button.prop('disabled', !isValid);
+    };
 
     const params = new URLSearchParams(window.location.search);
     const activeTab = params.get('activeTab');
@@ -14,6 +19,20 @@ $(document).ready(function () {
         $(`#${activeTab}-tab`).addClass('active');
         $(`#${activeTab}`).addClass('show active');
     }
+
+    function toggleRecipientRequirement() {
+        var distributionList = document.getElementById('distributionListId').value;
+        var recipients = document.getElementById('recipientIds');
+        if (distributionList) {
+            recipients.removeAttribute('required');
+        } else {
+            recipients.setAttribute('required', 'required');
+        }
+        validateForm();
+    }
+
+    $('#distributionListId').change(toggleRecipientRequirement);
+    $('#recipientIds').change(validateForm);
 
     function loadModal(entityType, entityId = null) {
         const url = entityId ? `/EmailManagement/Edit${entityType}/${entityId}` : `/EmailManagement/Create${entityType}`;
@@ -99,6 +118,7 @@ $(document).ready(function () {
     $('.select-recipient, .select-template').on('change', toggleDeleteButtons);
 
     validateForm();
+    toggleRecipientRequirement();
 
     // Attach loadModal to global window object for usage in HTML attributes
     window.loadModal = loadModal;

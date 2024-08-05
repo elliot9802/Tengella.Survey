@@ -22,6 +22,7 @@ namespace Tengella.Survey.Business.Services
         {
             return await _context.Recipients.ToListAsync();
         }
+
         public async Task<List<Recipient>> GetRecipientsByIdsAsync(List<int> recipientIds)
         {
             return await _context.Recipients.Where(r => recipientIds.Contains(r.RecipientId) && !r.OptedOut).ToListAsync();
